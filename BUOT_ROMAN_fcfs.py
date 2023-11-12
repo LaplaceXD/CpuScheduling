@@ -155,6 +155,7 @@ class Processor:
     def __init__(self):
         self._running_process = None
         self._has_ran = False
+        self._on_process_tick_subs = []
 
     @property
     def is_occupied(self):
@@ -176,6 +177,9 @@ class Processor:
     def running_process(self):
         return self._running_process
     
+    def on_process_tick(self, fn):
+        self._on_process_tick_subs.append(fn)
+    
     def process(self, process):
         self._running_process = process
 
@@ -187,26 +191,25 @@ class Processor:
         if self.is_occupied:
             self._running_process.tick(time)
             self._has_ran = True
+            for fn in self._on_process_tick_subs:
+                fn(self._running_process.burst_remaining)
 
 class Scheduler:
-    def __init__(self, processes = [], ready_queue = [], preempt = None, on_process_tick = None):
+    def __init__(self, processes = [], processor = None):
         self.processes = processes
-        self.ready_queue = ready_queue
-        self.preempt = preempt
-        self.on_process_tick = on_process_tick
+        self.processor = processor
+        self.ready_queue = []
 
     def tick(self, time):
-        pass
+        return self.ready_queue
 
 class OS:
     def __init__(self, scheduler, processes = []):
         self._processes = processes
-        self._ready_queue = []
         self._processor = Processor()
         self._trail = ExecutionTrail()
-        self._scheduler = scheduler(self._processes, self._ready_queue, self._preempt, self._on_process_tick)
+        self._scheduler = scheduler(self._processes, self._processor)
 
-        self._on_process_tick_subs = []
         self._running_time = -1     # -1 means not started
 
     @property
@@ -240,29 +243,22 @@ class OS:
     def execution_trail(self):
         return self._trail.trail
 
-    def _on_process_tick(self, fn):
-        self._on_process_tick_subs.append(fn)
-
-    def _preempt(self):
-        self._processes.clear()
-
     def run(self):
         while any(map(lambda p : p.is_pending, self._processes)):
             self._running_time += 1
-            self._scheduler.tick(self._running_time)
+            ready_queue = self._scheduler.tick(self._running_time)
 
             if self._processor.is_occupied:
                 self._processor.tick()
-                for fn in self._on_process_tick_subs:
-                    fn(self._processes.burst_remaining, self._running_time)
                 
                 if self._processor.is_completed:
                     self._trail.add_trail(self._processor.running_process.pid, self._running_time)
                     self._processor.running_process.end(self._running_time)
                     self._processor.clear()
+                    ready_queue = self._scheduler.tick(self._running_time)
             
-            if len(self._ready_queue) > 0 and self._processor.is_idle:
-                process = self._ready_queue.pop(0)
+            if len(ready_queue) > 0 and self._processor.is_idle:
+                process = ready_queue.pop(0)
                 self._processor.process(process)
             
             if self._processor.is_occupied and not self._processor.has_ran and self._trail.last_recorded_completion < self._running_time:
@@ -336,10 +332,11 @@ class Gantt(Renderer):
 # ===== LOGIC STARTS HERE =====
 class FCFS(Scheduler):
     def tick(self, time):
-        arrived_processes = list(filter(lambda p : p.arrival == time, self.processes))
-        arrived_processes.sort(key=lambda p : p.pid)
-
-        self.ready_queue.extend(arrived_processes)
+        if self.processor.is_idle:
+            arrived_processes = list(filter(lambda p : p.arrival <= time and p.is_pending and p not in self.ready_queue, self.processes))
+            arrived_processes.sort(key=lambda p : (p.arrival, p.pid))
+            self.ready_queue.extend(arrived_processes)
+        return self.ready_queue
 
 def main():
     process_list = []
