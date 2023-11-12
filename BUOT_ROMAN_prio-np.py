@@ -107,7 +107,7 @@ class Process:
         pid = next(Process.id_seq)
 
         print("===== P" + str(pid) + " Details =====")
-        arrival_time = trynuminput("Arrival Time: ") 
+        arrival_time = trynuminput("Arrival Time: ", 0) 
         burst_time = trynuminput("Burst Time: ") 
         priority = trynuminput("Priority: ") if with_priority else 1
 
