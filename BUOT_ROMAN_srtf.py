@@ -356,8 +356,8 @@ class SRTF(Scheduler):
         arrived_processes = list(filter(lambda p : p.arrival <= time, self.pending_queue))
 
         if len(arrived_processes) > 0:
-            process = self.processor.clear()
-            if process is not None:
+            if self.processor.is_occupied and not self.processor.is_completed:
+                process = self.processor.clear()
                 self.ready_queue.append(process)
             
             self.ready_queue.extend(arrived_processes)
