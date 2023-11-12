@@ -6,6 +6,7 @@
 # Activity: CPU Scheduling Algorithm: First Come First Serve
 # ===========================================================
 
+from abc import ABC, abstractmethod
 import os
 
 # ==== UTIL FUNCTIONS =====
@@ -102,14 +103,15 @@ class Process:
         self._waiting = self._turnaround - self._burst
 
     @staticmethod
-    def prompt():
+    def prompt(with_priority = False):
         pid = next(Process.id_seq)
 
         print("===== P" + str(pid) + " Details =====")
         arrival_time = trynuminput("Arrival Time: ") 
         burst_time = trynuminput("Burst Time: ") 
-       
-        return Process(pid, arrival_time, burst_time)
+        priority = trynuminput("Priority: ") if with_priority else 1
+
+        return Process(pid, arrival_time, burst_time, priority)
 # ===== PROCESS DEFINITIONS =====
 
 # ===== SCHEDULER DEFINITIONS =====
@@ -194,14 +196,19 @@ class Processor:
             for fn in self._on_process_tick_subs:
                 fn(self._running_process.burst_remaining)
 
-class Scheduler:
+class Scheduler(ABC):
     def __init__(self, processes = [], processor = None):
         self.processes = processes
         self.processor = processor
         self.ready_queue = []
+    
+    @property
+    def pending_queue(self):
+        return list(filter(lambda p : p.is_pending and p not in self.ready_queue, self.processes))
 
+    @abstractmethod    
     def tick(self, time):
-        return self.ready_queue
+        pass
 
 class OS:
     def __init__(self, scheduler, processes = []):
@@ -333,9 +340,11 @@ class Gantt(Renderer):
 class FCFS(Scheduler):
     def tick(self, time):
         if self.processor.is_idle:
-            arrived_processes = list(filter(lambda p : p.arrival <= time and p.is_pending and p not in self.ready_queue, self.processes))
-            arrived_processes.sort(key=lambda p : (p.arrival, p.pid))
-            self.ready_queue.extend(arrived_processes)
+            arrived_processes = list(filter(lambda p : p.arrival <= time, self.pending_queue))
+
+            if len(arrived_processes) > 0:
+                self.ready_queue.extend(arrived_processes)
+                self.ready_queue.sort(key=lambda p : (p.arrival, p.pid))
         return self.ready_queue
 
 def main():
