@@ -156,8 +156,9 @@ class ExecutionTrail:
 class Processor:
     def __init__(self):
         self._running_process = None
-        self._has_ran = False
         self._on_process_tick_subs = []
+        self._on_clear_subs = []
+        self._on_process_add_subs = []
 
     @property
     def is_occupied(self):
@@ -172,27 +173,36 @@ class Processor:
         return self.is_occupied and self._running_process.burst_remaining == 0
 
     @property
-    def has_ran(self):
-        return self._has_ran
-
-    @property
     def running_process(self):
         return self._running_process
     
     def on_process_tick(self, fn):
         self._on_process_tick_subs.append(fn)
     
+    def on_process_add(self, fn):
+        self._on_process_add_subs.append(fn)
+    
+    def on_clear(self, fn):
+        self._on_clear_subs.append(fn)
+    
     def process(self, process):
         self._running_process = process
+        for fn in self._on_process_add_subs:
+            fn()
 
     def clear(self):
+        for fn in self._on_clear_subs:
+            fn()
+        
+        process = self._running_process
         self._running_process = None
-        self._has_ran = False
+        
+        return process
 
     def tick(self, time = 1):
         if self.is_occupied:
             self._running_process.tick(time)
-            self._has_ran = True
+            
             for fn in self._on_process_tick_subs:
                 fn(self._running_process.burst_remaining)
 
@@ -204,7 +214,7 @@ class Scheduler(ABC):
     
     @property
     def pending_queue(self):
-        return list(filter(lambda p : p.is_pending and p not in self.ready_queue, self.processes))
+        return list(filter(lambda p : p.is_pending and p not in self.ready_queue and p != self.processor.running_process, self.processes))
 
     @abstractmethod    
     def tick(self, time):
@@ -212,12 +222,25 @@ class Scheduler(ABC):
 
 class OS:
     def __init__(self, scheduler, processes = []):
+        self._running_time = -1     # -1 means not started
+        self._idle_time = 0
         self._processes = processes
-        self._processor = Processor()
         self._trail = ExecutionTrail()
+
+        self._processor = Processor()
+        self._processor.on_clear(self.record_executed_process)
+        self._processor.on_process_add(self.record_idle)
+        
         self._scheduler = scheduler(self._processes, self._processor)
 
-        self._running_time = -1     # -1 means not started
+    def record_executed_process(self):
+        if self._processor.is_occupied:
+            self._trail.add_trail(self._processor.running_process.pid, self._running_time) 
+    
+    def record_idle(self):
+        if self._processor.is_occupied and self._trail.last_recorded_completion < self.running_time:
+            self._trail.add_trail("idle", self._running_time)
+            self._idle_time += self._trail.trail[-1].duration 
 
     @property
     def running_time(self):
@@ -225,12 +248,7 @@ class OS:
 
     @property
     def idle_time(self):
-        idle = filter(lambda e : e.pid == "idle", self._trail.trail)
-        
-        total = 0
-        for i in idle:
-            total += i.duration
-        return total
+        return self._idle_time
 
     @property
     def total_turnaround_time(self):
@@ -250,26 +268,22 @@ class OS:
     def execution_trail(self):
         return self._trail.trail
 
-    def run(self):
+    def run(self):        
         while any(map(lambda p : p.is_pending, self._processes)):
             self._running_time += 1
-            ready_queue = self._scheduler.tick(self._running_time)
-
+  
             if self._processor.is_occupied:
                 self._processor.tick()
                 
                 if self._processor.is_completed:
-                    self._trail.add_trail(self._processor.running_process.pid, self._running_time)
                     self._processor.running_process.end(self._running_time)
                     self._processor.clear()
-                    ready_queue = self._scheduler.tick(self._running_time)
-            
+  
+            ready_queue = self._scheduler.tick(self._running_time)
+
             if len(ready_queue) > 0 and self._processor.is_idle:
                 process = ready_queue.pop(0)
                 self._processor.process(process)
-            
-            if self._processor.is_occupied and not self._processor.has_ran and self._trail.last_recorded_completion < self._running_time:
-                self._trail.add_trail("idle", self._running_time)
 # ===== SCHEDULER DEFINITIONS =====
 
 # ===== RENDERER DEFINITIONS =====
