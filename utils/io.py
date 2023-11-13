@@ -1,6 +1,6 @@
 from typing import Optional
 
-def input_bounded_num(prompt: object = "", min: int = 1, max: Optional[int] = None) -> int:
+def input_bounded_num(prompt: object = "", min: int = 1, max: Optional[int] = None):
     """ Get a number input from the user that satisfies a certain minimum and maximum. """
     result: Optional[int] = None
     
