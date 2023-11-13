@@ -1,6 +1,7 @@
 from typing import Optional
 
-def __id_sequence(seed = 1):
+def __num_sequence_generator(seed = 1):
+    """ Returns a sequence of numbers starting from a given number. """
     value = seed
 
     while True:
@@ -8,7 +9,9 @@ def __id_sequence(seed = 1):
         value += 1
 
 class Process:
-    id_sequence = __id_sequence()
+    """ Models the form of a process in an operating system. """
+
+    id_sequence = __num_sequence_generator()
 
     def __init__(self, pid: int, arrival_time: int, burst_time: int, priority: int = 1, queue_level: int = 1):
         self.__pid: int = pid
@@ -68,10 +71,14 @@ class Process:
     def is_pending(self):
         return self.__completion is None
 
-    def tick(self, time = 1):
-        self.__burst_remaining -= time
+    def tick(self, time_quantum: int = 1):
+        """ Runs the process based on a given time quantum. """
+        self.__burst_remaining -= time_quantum
 
-    def end(self, timestamp):
+    def end(self, timestamp: int):
+        """ Marks the process as ended and records its time of completion based on a timestamp. """
         self._completion = timestamp
         self._turnaround = self._completion - self._arrival
         self._waiting = self._turnaround - self._burst
+
+Process.id_sequence
