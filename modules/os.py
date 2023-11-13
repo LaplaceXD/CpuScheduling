@@ -49,7 +49,7 @@ class OS:
             self.__running_time += 1
   
             if self.__processor.is_occupied:
-                self.__processor.tick()
+                self.__processor.run()
                 
                 if self.__processor.is_finished:
                     self.__processor.current_process.end(self.__running_time)
