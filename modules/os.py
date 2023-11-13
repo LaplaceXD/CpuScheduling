@@ -28,6 +28,10 @@ class OS:
             self.__idle_time += self.__trail.trail[-1].duration
 
     @property
+    def processes(self):
+        return self.__processes
+
+    @property
     def running_time(self):
         return self.__running_time
 
