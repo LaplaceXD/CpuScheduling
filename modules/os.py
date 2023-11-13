@@ -15,7 +15,7 @@ class OS:
         self.__scheduler: Scheduler = scheduler(self.__processes, self.__processor)
         
         self.__processor.on_clear(self.__record_completed_process)
-        self.__processor.on_process_add(self.__record_idle_time)
+        self.__processor.on_load(self.__record_idle_time)
 
     def __record_completed_process(self, completed_process: Process):
         """ Records the completed process to the execution trail. """
