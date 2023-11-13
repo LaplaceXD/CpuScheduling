@@ -20,7 +20,7 @@ class Table(View):
         table += self._format_items(self.__headers) + "\n"
         table += bar_line
 
-        for data in self.data:
+        for data in self.__data:
             table += self._format_items(data) + "\n"
         
         table += bar_line
