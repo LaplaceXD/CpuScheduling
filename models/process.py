@@ -1,6 +1,6 @@
 from typing import Optional
 
-def __num_sequence_generator(seed = 1):
+def num_sequence_generator(seed = 1):
     """ Returns a sequence of numbers starting from a given number. """
     value = seed
 
@@ -11,7 +11,7 @@ def __num_sequence_generator(seed = 1):
 class Process:
     """ Models the form of a process in an operating system. """
 
-    id_sequence = __num_sequence_generator()
+    id_sequence = num_sequence_generator()
 
     def __init__(self, pid: int, arrival_time: int, burst_time: int, priority: int = 1, queue_level: int = 1):
         self.__pid: int = pid
