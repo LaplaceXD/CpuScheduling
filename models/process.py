@@ -71,10 +71,6 @@ class Process:
     def is_depleted(self):
         return self.__burst_remaining <= 0
 
-    @property
-    def is_pending(self):
-        return self.__completion is None
-
     def tick(self, time_quantum: int = 1):
         """ Runs the process based on a given time quantum. """
         self.__burst_remaining -= time_quantum
