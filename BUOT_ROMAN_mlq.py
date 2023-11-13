@@ -191,6 +191,12 @@ class Processor:
     
     def on_process_tick(self, fn):
         self._on_process_tick_subs.append(fn)
+
+    def sub_to_on_process_tick(self, fn):
+        return fn in self._on_process_tick_subs 
+    
+    def remove_on_process_tick(self, fn):
+        self._on_process_tick_subs.remove(fn)
     
     def on_process_add(self, fn):
         self._on_process_add_subs.append(fn)
@@ -448,8 +454,12 @@ def RoundRobinFactory(time_quantum):
             super().__init__(processes, processor)
             self._time_allocation = time_quantum
             self._previous_process = None
-            self.processor.on_process_tick(self.decrement_process_time_window)
             self.is_preemptive = True
+            self.processor.on_clear(self.remove_decrement_process_time_window)
+
+        def remove_decrement_process_time_window(self):
+            if self.processor.sub_to_on_process_tick(self.decrement_process_time_window):
+                self.processor.remove_on_process_tick(self.decrement_process_time_window)
 
         def decrement_process_time_window(self, remaining_time):
             self._time_allocation -= 1
@@ -498,7 +508,7 @@ def MLQFactory(layers = []):
             arrived_processes = list(filter(lambda p : p.arrival <= time, self.pending_queue))
 
             if len(arrived_processes) > 0:
-                preempt = True if self.processor.is_idle else self._layers[self.processor.running_process.queue_level].is_preemptive
+                preempt = self.processor.is_occupied and self._layers[self.processor.running_process.queue_level].is_preemptive
 
                 if preempt and self.processor.is_occupied and not self.processor.is_completed:
                     process = self.processor.clear()
@@ -506,13 +516,18 @@ def MLQFactory(layers = []):
 
                 for layer in self._layers:
                     layer.tick(time, preempt)
-           
-            queue = []
-            for layer in self._layers:
-                if len(layer.ready_queue) > 0:
-                    queue = layer.ready_queue
-                    break
 
+            queue = []
+            if self.processor.is_idle:
+                for layer in self._layers:
+                    if len(layer.ready_queue) > 0:
+                        # HACK -> This hasattr is the only way I know to determine whether the layer is RoundRobin
+                        # since isinstance, is, and type() does not work as it is enclosed inside a function
+                        if hasattr(layer, 'decrement_process_time_window'):
+                            self.processor.on_process_tick(layer.decrement_process_time_window) 
+                        queue = layer.ready_queue
+                        break
+            
             return queue            
             
     return MLQ
@@ -545,17 +560,19 @@ def main():
     print()
     for i in range(num_layers):
         selected_layer = trynuminput("Layer #{}: ".format(i + 1), 1, 6) - 1
-        queues.append(queue_names[selected_layer])
 
         layer_class = layer_classes[selected_layer]
         time_quantum = 0
         if selected_layer == 4:
             time_quantum = trynuminput("Time Quantum: ")
             layer_class = layer_classes[selected_layer](time_quantum)
-
+            queues.append(queue_names[selected_layer] + " | q=" + str(time_quantum))
+        else:
+            queues.append(queue_names[selected_layer])
+        
         layers.append(layer_class)
         
-        if selected_layer in [3, 4]:
+        if selected_layer in [2, 3]:
             is_prio = True
 
     for _ in range(processes):
