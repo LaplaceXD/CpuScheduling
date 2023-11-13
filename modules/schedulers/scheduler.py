@@ -19,6 +19,10 @@ class Scheduler(ABC):
         """ Checks whether a given queue is already ready to be processed. """
         return process in self._ready_queue
 
+    def get_arrived_processes(self, timestamp: int):
+        """ Gets all the arrived processes from the waiting queue based on a given timestamp. """
+        return list(filter(lambda p : p.arrival <= timestamp, self.waiting_queue))
+
     @abstractmethod   
     def process_queue(self, timestamp: int, preempt: bool = True):
         """ Processes the ready queue. """
