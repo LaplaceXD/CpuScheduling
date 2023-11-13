@@ -20,4 +20,4 @@ class ExecutionFrame:
     
     @property
     def span(self):
-        return self.__end - self.__end
+        return self.__end - self.__start

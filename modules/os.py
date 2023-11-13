@@ -24,8 +24,8 @@ class OS:
     def __record_idle_time(self, _: Process):
         """ Records the idle time to the execution trail. """
         if self.__trail.last_execution_end_time < self.__running_time:
+            self.__idle_time += self.__running_time - self.__trail.last_execution_end_time 
             self.__trail.add_frame("idle", self.__running_time)
-            self.__idle_time += self.__trail.trail[-1].span
 
     @property
     def processes(self):
