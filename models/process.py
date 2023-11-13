@@ -64,9 +64,13 @@ class Process:
         return self.__waiting
     
     @property
-    def is_completed(self):
+    def is_marked_ended(self):
         return self.__completion is not None
-    
+
+    @property
+    def is_depleted(self):
+        return self.__burst_remaining <= 0
+
     @property
     def is_pending(self):
         return self.__completion is None
@@ -77,6 +81,6 @@ class Process:
 
     def end(self, timestamp: int):
         """ Marks the process as ended and records its time of completion based on a timestamp. """
-        self._completion = timestamp
-        self._turnaround = self._completion - self._arrival
-        self._waiting = self._turnaround - self._burst
+        self.__completion = timestamp
+        self.__turnaround = self.__completion - self.__arrival
+        self.__waiting = self.__turnaround - self.__burst
