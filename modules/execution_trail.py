@@ -13,6 +13,10 @@ class ExecutionTrail:
         return self.__trail
 
     @property
+    def start_time(self):
+        return self.__start_time
+
+    @property
     def last_execution_end_time(self):
         return self.__start_time if len(self.__trail) == 0 else self.__trail[-1].end
 
