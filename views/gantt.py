@@ -19,7 +19,7 @@ class Gantt(View):
         bar_line = ("+" + "-" * self._cell_width) * len(self.__labels) + "+\n"
 
         gantt += bar_line
-        gantt += self._format_items(self.__timestamps) + "\n"
+        gantt += self._format_items(self.__labels) + "\n"
         gantt += bar_line
         gantt += str(self.__start_time) + self._format_items(self.__timestamps, sep=" ")
 
