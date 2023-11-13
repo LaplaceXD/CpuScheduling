@@ -80,5 +80,3 @@ class Process:
         self._completion = timestamp
         self._turnaround = self._completion - self._arrival
         self._waiting = self._turnaround - self._burst
-
-Process.id_sequence
