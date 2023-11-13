@@ -371,10 +371,6 @@ class Gantt(Renderer):
 
 # ===== LOGIC STARTS HERE =====
 class FCFS(Scheduler):
-    def __init__(self, processes = [], processor = None):
-        super().__init__(processes, processor)
-        self.is_preemptive = False
-    
     def tick(self, time, preempt = False):
         if self.processor.is_idle:
             arrived_processes = list(filter(lambda p : p.arrival <= time, self.pending_queue))
@@ -385,10 +381,6 @@ class FCFS(Scheduler):
         return self.ready_queue
 
 class SJF(Scheduler):
-    def __init__(self, processes = [], processor = None):
-        super().__init__(processes, processor)
-        self.is_preemptive = False
-    
     def tick(self, time, preempt = False):
         if self.processor.is_idle:
             arrived_processes = list(filter(lambda p : p.arrival <= time, self.pending_queue))
@@ -399,10 +391,6 @@ class SJF(Scheduler):
         return self.ready_queue
 
 class PriorityNP(Scheduler):
-    def __init__(self, processes = [], processor = None):
-        super().__init__(processes, processor)
-        self.is_preemptive = False
-    
     def tick(self, time, preempt = False):
         if self.processor.is_idle:
             arrived_processes = list(filter(lambda p : p.arrival <= time, self.pending_queue))
@@ -413,10 +401,6 @@ class PriorityNP(Scheduler):
         return self.ready_queue
 
 class Priority(Scheduler):
-    def __init__(self, processes = [], processor = None):
-        super().__init__(processes, processor)
-        self.is_preemptive = True
-    
     def tick(self, time, preempt = True):
         arrived_processes = list(filter(lambda p : p.arrival <= time, self.pending_queue))
 
@@ -431,10 +415,6 @@ class Priority(Scheduler):
         return self.ready_queue
         
 class SRTF(Scheduler):
-    def __init__(self, processes = [], processor = None):
-        super().__init__(processes, processor)
-        self.is_preemptive = True
-    
     def tick(self, time, preempt = True):
         arrived_processes = list(filter(lambda p : p.arrival <= time, self.pending_queue))
 
@@ -454,8 +434,11 @@ def RoundRobinFactory(time_quantum):
             super().__init__(processes, processor)
             self._time_allocation = time_quantum
             self._previous_process = None
-            self.is_preemptive = True
             self.processor.on_clear(self.remove_decrement_process_time_window)
+            self.processor.on_clear(self.reset_time_allocation)
+
+        def reset_time_allocation(self):
+            self._time_allocation = time_quantum
 
         def remove_decrement_process_time_window(self):
             if self.processor.sub_to_on_process_tick(self.decrement_process_time_window):
@@ -464,11 +447,8 @@ def RoundRobinFactory(time_quantum):
         def decrement_process_time_window(self, remaining_time):
             self._time_allocation -= 1
 
-            if self._time_allocation == 0 or remaining_time == 0: 
-                self._time_allocation = time_quantum
-                
-                if remaining_time != 0:
-                    self._previous_process = self.processor.clear()
+            if self._time_allocation == 0 and remaining_time != 0: 
+                self._previous_process = self.processor.clear()
 
         def tick(self, time, preempt = True):
             if self.processor.is_idle or self._time_allocation == time:
@@ -508,14 +488,15 @@ def MLQFactory(layers = []):
             arrived_processes = list(filter(lambda p : p.arrival <= time, self.pending_queue))
 
             if len(arrived_processes) > 0:
-                preempt = self.processor.is_occupied and self._layers[self.processor.running_process.queue_level].is_preemptive
+                highest_priority = min(list(map(lambda p : p.queue_level, arrived_processes)))
+                preempt = self.processor.is_occupied and self.processor.running_process.queue_level > highest_priority 
 
-                if preempt and self.processor.is_occupied and not self.processor.is_completed:
+                if preempt and not self.processor.is_completed:
                     process = self.processor.clear()
                     self._layers[process.queue_level].ready_queue.append(process)
 
-                for layer in self._layers:
-                    layer.tick(time, preempt)
+                for i in range(len(self._layers)):
+                    self._layers[i].tick(time, i == highest_priority - 1)
 
             queue = []
             if self.processor.is_idle:
@@ -528,7 +509,7 @@ def MLQFactory(layers = []):
                         queue = layer.ready_queue
                         break
             
-            return queue            
+            return queue
             
     return MLQ
 
