@@ -9,9 +9,9 @@ class SRTF(Scheduler):
         if len(arrived_processes) > 0:
             if preempt and self._processor.is_occupied and not self._processor.is_finished:
                 process = self._processor.clear()
-                self._ready_queue.append(process)
+                self.ready_queue.append(process)
 
-            self._ready_queue.extend(arrived_processes)
-            self._ready_queue.sort(key=lambda p : (p.burst_remaining, p.arrival, p.pid))
+            self.ready_queue.extend(arrived_processes)
+            self.ready_queue.sort(key=lambda p : (p.burst_remaining, p.arrival, p.pid))
         
-        return self._ready_queue
+        return self.ready_queue

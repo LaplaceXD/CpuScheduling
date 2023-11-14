@@ -27,7 +27,12 @@ class Scheduler(ABC):
         """ A method that returns a partially instantiated scheduler that can be latched onto the operating system for use. """
         partialized_instance: Callable[[List[Process, Processor], cls]] = lambda pl, p : cls(pl, p)
         return partialized_instance
-    
+
+    @property
+    def ready_queue(self):
+        """ Returns the list of processes that are ready to be processed. """
+        return self._ready_queue
+
     @property
     def waiting_queue(self):
         """ Returns the list of processes that have yet to be processed or ready. """
