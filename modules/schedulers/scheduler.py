@@ -13,6 +13,9 @@ class Scheduler(ABC):
         self._processes: List[Process] = processes
         self._processor: Processor = processor
         self._ready_queue: List[Process] = []
+
+    def __str__(self):
+        return self.name
     
     @classmethod
     def is_instance(cls, scheduler_instance: 'Scheduler'):
