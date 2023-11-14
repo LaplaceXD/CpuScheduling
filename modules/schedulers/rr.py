@@ -32,14 +32,14 @@ class RoundRobin(Scheduler):
     def previous_process(self):
         return self.__previous_process
     
+    @previous_process.setter
+    def previous_process(self, previous_process: Process):
+        self.__previous_process = previous_process
+    
     @property
     def has_previous_process(self):
         return self.__previous_process is not None
     
-    def clear_previous_process(self):
-        """ Clears the previous process of the scheduler. """
-        self.__previous_process = None
-
     def __reset_time_window(self, _: Process):
         """ Resets the time window to the original time quantum value. """
         self.__time_window = self.__time_quantum 
@@ -60,6 +60,6 @@ class RoundRobin(Scheduler):
 
             if self.has_previous_process:
                 self.ready_queue.append(self.__previous_process)
-                self.clear_previous_process()
+                self.__previous_process = None
 
         return self.ready_queue
