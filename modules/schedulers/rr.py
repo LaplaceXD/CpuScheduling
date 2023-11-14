@@ -7,7 +7,7 @@ from modules import Processor
 class RoundRobin(Scheduler):
     name = "Round Robin (RR)"
 
-    def __init__(self, processes: List[Process], processor: Processor, time_quantum: int, is_decrement_automatic: bool = True):
+    def __init__(self, processes: List[Process], processor: Processor, time_quantum: int, is_decrement_automatic: bool = False):
         super().__init__(processes, processor)
         self.__time_quantum: int = time_quantum
         self.__time_window: int = time_quantum
@@ -19,9 +19,9 @@ class RoundRobin(Scheduler):
             self._processor.on_tick(self.decrement_time_window)
     
     @classmethod
-    def create(cls, time_quantum: int, is_decrement_automatic: bool = True):
+    def create(cls, time_quantum: int, is_decrement_automatic: bool = False):
         """ A method that returns a partially instantiated scheduler that can be latched onto the operating system for use. """
-        partialized_instance: Callable[[List[Process, Processor], cls]] = lambda pl, p : cls(pl, p, time_quantum, is_decrement_automatic)
+        partialized_instance: Callable[[List[Process], Processor], cls] = lambda pl, p : cls(pl, p, time_quantum, is_decrement_automatic)
         return partialized_instance
 
     @property
