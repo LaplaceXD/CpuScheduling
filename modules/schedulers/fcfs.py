@@ -1,7 +1,9 @@
 from .scheduler import Scheduler 
 
 class FCFS(Scheduler):
-    name = "First Come First Serve (FCFS)"
+    @staticmethod
+    def name():
+        return "First Come First Serve (FCFS)"
 
     def process_queue(self, timestamp: int, _: bool = False):
         if self._processor.is_idle:

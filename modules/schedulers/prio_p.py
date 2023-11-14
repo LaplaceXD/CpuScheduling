@@ -1,7 +1,13 @@
 from .scheduler import Scheduler
 
 class Priority(Scheduler):
-    name = "Priority Preemptive (Prio-P)"
+    @staticmethod
+    def name():
+        return "Priority Preemptive (Prio-P)"
+    
+    @staticmethod
+    def is_priority_required():
+        return True
 
     def process_queue(self, timestamp: int, preempt: bool = True):
         arrived_processes = self.get_arrived_processes(timestamp)

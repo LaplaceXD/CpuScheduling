@@ -1,7 +1,13 @@
 from .scheduler import Scheduler
 
 class PriorityNP(Scheduler):
-    name = "Priority Non-Preemptive (P-NP)"
+    @staticmethod
+    def name():
+        return "Priority Non-Preemptive (Prio-NP)"
+    
+    @staticmethod
+    def is_priority_required():
+        return True
 
     def process_queue(self, timestamp: int, _: bool = False):
         if self._processor.is_idle:
