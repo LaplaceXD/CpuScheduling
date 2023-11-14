@@ -1,34 +1,29 @@
-from typing import List
+from typing import List, Callable
 from abc import ABC, abstractmethod
 
 from models import Process
 from modules import Processor
 
 class Scheduler(ABC):
+    name: str = "Scheduler"
+    is_priority_required: bool = False
+    is_queue_level_required: bool = False
+
     def __init__(self, processes: List[Process], processor: Processor):
         self._processes: List[Process] = processes
         self._processor: Processor = processor
         self._ready_queue: List[Process] = []
     
-    @staticmethod
-    def name():
-        """ Returns the string name of the scheduler. """ 
-        return "Scheduler"
-    
-    @staticmethod
-    def is_priority_required():
-        """ Check whether priority fields for the processes are required for the scheduler to work. """ 
-        return False
-    
-    @staticmethod
-    def is_queue_level_required():
-        """ Check whether queue level fields for the processes are required for the scheduler to work. """ 
-        return False
-    
     @classmethod
     def is_instance(cls, scheduler_instance: 'Scheduler'):
         """ Checks whether a given instance is an instance of this scheduler class. """
-        return cls.name() == scheduler_instance.name()
+        return cls.name == scheduler_instance.name
+    
+    @classmethod
+    def create(cls):
+        """ A method that returns a partially instantiated scheduler that can be latched onto the operating system for use. """
+        partialized_instance: Callable[[List[Process, Processor], cls]] = lambda pl, p : cls(pl, p)
+        return partialized_instance
     
     @property
     def waiting_queue(self):

@@ -1,9 +1,8 @@
 from .scheduler import Scheduler
 
 class Priority(Scheduler):
-    @staticmethod
-    def name():
-        return "Priority Preemptive (Prio-P)"
+    name: str = "Priority Preemptive (Prio-P)"
+    is_priority_required: bool = True
     
     @staticmethod
     def is_priority_required():

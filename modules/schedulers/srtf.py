@@ -1,9 +1,7 @@
 from .scheduler import Scheduler
 
 class SRTF(Scheduler):
-    @staticmethod
-    def name():
-        return "Shortest Remaining Time First (SRTF)"
+    name = "Shortest Remaining Time First (SRTF)"
 
     def process_queue(self, timestamp: int, preempt: bool = True):
         arrived_processes = self.get_arrived_processes(timestamp)
