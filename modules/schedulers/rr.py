@@ -5,7 +5,7 @@ from models import Process
 from modules import Processor
 
 class RoundRobin(Scheduler):
-    name = "Round Robin (RR)"
+    name: str = "Round Robin (RR)"
 
     def __init__(self, processes: List[Process], processor: Processor, time_quantum: int, is_decrement_automatic: bool = False):
         super().__init__(processes, processor)

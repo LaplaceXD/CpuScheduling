@@ -1,7 +1,7 @@
 from .scheduler import Scheduler
 
 class SJF(Scheduler):
-    name = "Shortest Job First (SJF)"
+    name: str = "Shortest Job First (SJF)"
 
     def process_queue(self, timestamp: int, _: bool = False):
         if self._processor.is_idle:
