@@ -6,3 +6,4 @@ from .prio_p import Priority
 from .rr import RoundRobin
 from .srtf import SRTF
 from .mlq import MLQ
+from .mlfq import MLFQ
