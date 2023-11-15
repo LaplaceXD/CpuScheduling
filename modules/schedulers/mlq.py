@@ -15,8 +15,11 @@ class MLQ(Scheduler):
         for ql in range(len(layers)):
             ql_processes = list(filter(lambda p : p.queue_level == ql, processes))
             layer = layers[ql](ql_processes, processor)
+            
             if RoundRobin.is_instance(layer):
-                self._processor.on_clear(lambda _ : self._processor.off_tick(layer.decrement_time_window))
+                # Ensures that when two or more round robins exists, only the running round robin is ticking its time window
+                # The l = layer is a workaround to keep the layer block scoped, as layer is local scoped 
+                self._processor.on_clear(lambda _, l = layer : self._processor.off_tick(l.decrement_time_window))
 
             self.__layers.append(layer)
 
@@ -30,18 +33,6 @@ class MLQ(Scheduler):
         partialized_instance: Callable[[List[Process], Processor], cls] = lambda pl, p : cls(pl, p, layers)
         return partialized_instance
 
-    @property
-    def ready_queue(self):
-        for layer in self.__layers:
-            if len(layer.ready_queue) > 0:
-                if RoundRobin.is_instance(layer):
-                    self._processor.on_tick(layer.decrement_time_window)
-
-                self._ready_queue = layer.ready_queue
-                break 
-        
-        return self._ready_queue
-    
     def is_queued(self, process: Process):
         is_in_any_ready_queue = any(map(lambda layer : process in layer.ready_queue, self.__layers))
         is_previous_in_round_robin = any(map(lambda layer : RoundRobin.is_instance(layer) and process == layer.previous_process, self.__layers))
@@ -67,5 +58,12 @@ class MLQ(Scheduler):
         for layer in self.__layers:
             layer.process_queue(timestamp, layer == current_layer) 
 
-        # Get topmost non-empty queue or return cached queue
-        return self.ready_queue if self._processor.is_idle else self._ready_queue
+        if self._processor.is_idle:
+            for layer in self.__layers:
+                if len(layer.ready_queue) > 0:
+                    self._ready_queue = layer.ready_queue
+                    if RoundRobin.is_instance(layer):
+                        self._processor.on_tick(layer.decrement_time_window)
+                    break 
+
+        return self._ready_queue
