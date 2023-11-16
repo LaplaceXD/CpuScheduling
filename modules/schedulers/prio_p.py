@@ -4,10 +4,6 @@ class Priority(Scheduler):
     name: str = "Priority Preemptive (Prio-P)"
     is_priority_required: bool = True
     
-    @staticmethod
-    def is_priority_required():
-        return True
-
     def process_queue(self, timestamp: int, preempt: bool = True):
         arrived_processes = self.get_arrived_processes(timestamp)
 
