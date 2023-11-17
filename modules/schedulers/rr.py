@@ -38,7 +38,6 @@ class RoundRobin(Scheduler):
 
     def decrement_time_window(self, current_process: Process):
         """ Decrements the time window as long as there is a process being processed. """
-        print(self.name + " | q=" + str(self.time_quantum))
         self.__time_window -= 1
         if self.__time_window == 0 and not current_process.is_depleted:
             self.previous_process = self._processor.clear()
