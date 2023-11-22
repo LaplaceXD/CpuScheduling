@@ -34,12 +34,12 @@ class MLQ(Scheduler):
         return partialized_instance
 
     def is_queued(self, process: Process):
-        is_in_any_ready_queue = any(map(lambda layer : process in layer.ready_queue, self.__layers))
+        is_in_any_ready_queue = any(map(lambda layer : process in layer._ready_queue, self.__layers))
         is_previous_in_round_robin = any(map(lambda layer : RoundRobin.is_instance(layer) and process == layer.previous_process, self.__layers))
 
         return is_in_any_ready_queue or is_previous_in_round_robin
 
-    def process_queue(self, timestamp: int, _: bool = True) -> List[Process]:
+    def run(self, timestamp: int, preempt: bool = True) -> List[Process]:
         current_layer = self.__layers[self._processor.current_process.queue_level] if self._processor.is_occupied else None
         arrived_processes = self.get_arrived_processes(timestamp)
 
@@ -53,15 +53,15 @@ class MLQ(Scheduler):
                 if RoundRobin.is_instance(current_layer):
                     current_layer.previous_process = preempted_process
                 else:
-                    current_layer.ready_queue.append(preempted_process)
+                    current_layer.enqueue(preempted_process)
 
         for layer in self.__layers:
-            layer.process_queue(timestamp, layer == current_layer) 
+            layer.run(timestamp, preempt=layer == current_layer) 
 
         if self._processor.is_idle:
             for layer in self.__layers:
-                if len(layer.ready_queue) > 0:
-                    self._ready_queue = layer.ready_queue
+                if len(layer._ready_queue) > 0:
+                    self._ready_queue = layer._ready_queue
                     if RoundRobin.is_instance(layer):
                         self._processor.on_tick(layer.decrement_time_window)
                     break 

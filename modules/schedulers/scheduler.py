@@ -29,15 +29,14 @@ class Scheduler(ABC):
         return partialized_instance
 
     @property
-    def ready_queue(self):
-        """ Returns the list of processes that are ready to be processed. """
-        return self._ready_queue
-
-    @property
     def waiting_queue(self):
         """ Returns the list of processes that have yet to be processed or ready. """
         return list(filter(lambda p : not (p.is_marked_ended or self.is_queued(p) or p == self._processor.current_process), self._processes))
 
+    def enqueue(self, *processes: Process):
+        """ Adds processes to the ready queue. """
+        self._ready_queue.extend(processes)
+    
     def is_queued(self, process: Process):
         """ Checks whether a given queue is already ready to be processed. """
         return process in self._ready_queue
@@ -45,8 +44,9 @@ class Scheduler(ABC):
     def get_arrived_processes(self, timestamp: int):
         """ Gets all the arrived processes from the waiting queue based on a given timestamp. """
         return list(filter(lambda p : p.arrival <= timestamp, self.waiting_queue))
+    
 
-    @abstractmethod   
-    def process_queue(self, timestamp: int, preempt: bool = True) -> List[Process]:
-        """ Processes the ready queue. """
+    @abstractmethod
+    def run(self, timestamp: int, preempt: bool = True) -> List[Process]:
+        """ Runs the scheduler at a given timestamp to process the ready queue. """
         pass

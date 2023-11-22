@@ -42,16 +42,16 @@ class RoundRobin(Scheduler):
         if self.__time_window == 0 and not current_process.is_depleted:
             self.previous_process = self._processor.clear()
     
-    def process_queue(self, timestamp: int, _: bool = True) -> List[Process]:
+    def run(self, timestamp: int, preempt: bool = True) -> List[Process]:
         if self.__time_window == self.__time_quantum:
             arrived_processes = list(filter(lambda p : p != self.previous_process, self.get_arrived_processes(timestamp)))
 
             if len(arrived_processes) > 0:
                 arrived_processes.sort(key=lambda p : (p.arrival, p.pid))
-                self.ready_queue.extend(arrived_processes)
+                self.enqueue(*arrived_processes)
 
             if self.has_previous_process:
-                self.ready_queue.append(self.previous_process)
+                self.enqueue(self.previous_process)
                 self.previous_process = None
 
-        return self.ready_queue
+        return self._ready_queue

@@ -55,13 +55,13 @@ class MLFQ(Scheduler):
     def is_queued(self, process: Process):
         return self.__process_queue_levels[process.pid] is not None
 
-    def process_queue(self, timestamp: int, _: bool = True) -> List[Process]:
+    def run(self, timestamp: int, preempt: bool = True) -> List[Process]:
         if self._processor.is_idle:
             arrived_processes = self.get_arrived_processes(timestamp)
                 
             if len(arrived_processes) > 0:
                 arrived_processes.sort(key=lambda p : (p.arrival, p.pid))
-                self.round_robin_layers[0].ready_queue.extend(arrived_processes)
+                self.round_robin_layers[0].enqueue(*arrived_processes)
                     
                 for p in arrived_processes:
                     self.__process_queue_levels[p.pid] = 0
@@ -75,18 +75,18 @@ class MLFQ(Scheduler):
                 
                     if self.__process_queue_levels[pid] < len(self.round_robin_layers):
                         next_layer = self.round_robin_layers[self.__process_queue_levels[pid]]
-                        next_layer.ready_queue.append(self.previous_process) 
+                        next_layer.enqueue(self.previous_process) 
 
                 current_layer.previous_process = None
             
             for rr_layer in self.round_robin_layers:
-                if len(rr_layer.ready_queue) > 0:
+                if len(rr_layer._ready_queue) > 0:
                     self._processor.on_tick(rr_layer.decrement_time_window)
-                    self._ready_queue = rr_layer.ready_queue
+                    self._ready_queue = rr_layer._ready_queue
                     break
             
             if len(self._ready_queue) == 0:
-                self.last_layer.process_queue(timestamp, False)
-                self._ready_queue = self.last_layer.ready_queue
+                self.last_layer.run(timestamp, preempt=False)
+                self._ready_queue = self.last_layer._ready_queue
 
         return self._ready_queue

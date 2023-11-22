@@ -55,7 +55,7 @@ class OS:
                     self.__processor.current_process.end(self.__running_time)
                     self.__processor.clear()
   
-            ready_queue = self.__scheduler.process_queue(self.__running_time)
+            ready_queue = self.__scheduler.run(self.__running_time)
 
             if len(ready_queue) > 0 and self.__processor.is_idle:
                 process = ready_queue.pop(0)

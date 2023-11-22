@@ -1,17 +1,21 @@
+from models import Process
 from .scheduler import Scheduler
 
 class SRTF(Scheduler):
     name: str = "Shortest Remaining Time First (SRTF)"
 
-    def process_queue(self, timestamp: int, preempt: bool = True):
+    def enqueue(self, *processes: Process):
+        self._ready_queue.extend(processes)
+        self._ready_queue.sort(key=lambda p : (p.burst_remaining, p.arrival, p.pid))
+    
+    def run(self, timestamp: int, preempt: bool = True):
         arrived_processes = self.get_arrived_processes(timestamp)
 
         if len(arrived_processes) > 0:
             if preempt and self._processor.is_occupied and not self._processor.is_finished:
                 process = self._processor.clear()
-                self.ready_queue.append(process)
-
-            self.ready_queue.extend(arrived_processes)
-            self.ready_queue.sort(key=lambda p : (p.burst_remaining, p.arrival, p.pid))
+                arrived_processes.append(process)
+            
+            self.enqueue(*arrived_processes)
         
-        return self.ready_queue
+        return self._ready_queue
