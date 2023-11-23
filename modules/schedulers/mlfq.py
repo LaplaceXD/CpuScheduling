@@ -10,7 +10,10 @@ class MLFQ(Scheduler):
     def __init__(self, processes: List[Process], processor: Processor, time_quantums: List[int], last_layer: Callable[[List[Process], Processor], Scheduler]):
         super().__init__(processes, processor)
         self.__layers: List[Scheduler] = []
-        self.__process_queue_levels: dict[int, Optional[int]] = { p.pid: None for p in processes }
+
+        for p in processes:
+            # -1 signifies unqueued processes
+            p.queue_level = -1
 
         # Initialize the layers
         for idx in range(len(time_quantums)):
@@ -42,49 +45,32 @@ class MLFQ(Scheduler):
     def last_layer(self):
         return self.__layers[-1]
 
-    @property
-    def previous_process(self):
-        prev_process = None
-        for layer in self.round_robin_layers:
-            if layer.has_previous_process:
-                prev_process = layer.previous_process
-                break
-
-        return prev_process
-    
     def is_queued(self, process: Process):
-        return self.__process_queue_levels[process.pid] is not None
+        return any(map(lambda layer : process in layer._ready_queue, self.__layers))
 
-    def run(self, timestamp: int, preempt: bool = True) -> List[Process]:
+    def enqueue(self, *processes: Process):
+        # Queue the arrived processes to their next queue levels
+        for p in sorted(processes, key=lambda p : (p.arrival, p.pid)):
+            p.queue_level += 1
+
+            if p.queue_level < len(self.round_robin_layers):
+                self.round_robin_layers[p.queue_level].enqueue(p)
+
+    def run(self, timestamp: int, preempt: bool = True):
         if self._processor.is_idle:
             arrived_processes = self.get_arrived_processes(timestamp)
                 
             if len(arrived_processes) > 0:
-                arrived_processes.sort(key=lambda p : (p.arrival, p.pid))
-                self.round_robin_layers[0].enqueue(*arrived_processes)
-                    
-                for p in arrived_processes:
-                    self.__process_queue_levels[p.pid] = 0
+                self.enqueue(*arrived_processes)
 
-            if self.previous_process is not None:
-                pid = self.previous_process.pid
-
-                if self.__process_queue_levels[pid] < len(self.round_robin_layers):
-                    current_layer = self.round_robin_layers[self.__process_queue_levels[pid]]
-                    self.__process_queue_levels[pid] += 1
-                
-                    if self.__process_queue_levels[pid] < len(self.round_robin_layers):
-                        next_layer = self.round_robin_layers[self.__process_queue_levels[pid]]
-                        next_layer.enqueue(self.previous_process) 
-
-                current_layer.previous_process = None
-            
+            # Get the topmost round robin layer's ready queue
             for rr_layer in self.round_robin_layers:
                 if len(rr_layer._ready_queue) > 0:
                     self._processor.on_tick(rr_layer.decrement_time_window)
                     self._ready_queue = rr_layer._ready_queue
                     break
             
+            # If there are no more processes on the top layers work on the last layer
             if len(self._ready_queue) == 0:
                 self.last_layer.run(timestamp, preempt=False)
                 self._ready_queue = self.last_layer._ready_queue

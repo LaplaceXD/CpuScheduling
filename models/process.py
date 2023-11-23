@@ -39,6 +39,10 @@ class Process:
     def queue_level(self):
         return self.__queue_level
     
+    @queue_level.setter 
+    def queue_level(self, queue_level: int):
+        self.__queue_level = queue_level
+    
     @property 
     def arrival(self):
         return self.__arrival
