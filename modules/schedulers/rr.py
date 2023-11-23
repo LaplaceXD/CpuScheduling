@@ -11,7 +11,6 @@ class RoundRobin(Scheduler):
         super().__init__(processes, processor)
         self.__time_quantum: int = time_quantum
         self.__time_window: int = time_quantum
-        self.previous_process: Optional[Process] = None
 
         self._processor.on_clear(self.__reset_time_window)
 
@@ -28,10 +27,6 @@ class RoundRobin(Scheduler):
     def time_quantum(self):
         return self.__time_quantum
 
-    @property
-    def has_previous_process(self):
-        return self.previous_process is not None
-    
     def __reset_time_window(self, _: Process):
         """ Resets the time window to the original time quantum value. """
         self.__time_window = self.__time_quantum 
@@ -39,19 +34,19 @@ class RoundRobin(Scheduler):
     def decrement_time_window(self, current_process: Process):
         """ Decrements the time window as long as there is a process being processed. """
         self.__time_window -= 1
+        
         if self.__time_window == 0 and not current_process.is_depleted:
-            self.previous_process = self._processor.clear()
+            self._processor.clear()
     
-    def run(self, timestamp: int, preempt: bool = True) -> List[Process]:
-        if self.__time_window == self.__time_quantum:
-            arrived_processes = list(filter(lambda p : p != self.previous_process, self.get_arrived_processes(timestamp)))
-
+    def enqueue(self, *processes: Process):
+        # The first sorting condition is just to make sure that previous processes are appended at the end
+        self._ready_queue.extend(sorted(processes, key=lambda p : (0 if p.burst == p.burst_remaining else 1, p.arrival, p.pid)))
+    
+    def run(self, timestamp: int, preempt: bool = False):
+        if self._processor.is_idle:
+            arrived_processes = self.get_arrived_processes(timestamp)
+        
             if len(arrived_processes) > 0:
-                arrived_processes.sort(key=lambda p : (p.arrival, p.pid))
                 self.enqueue(*arrived_processes)
-
-            if self.has_previous_process:
-                self.enqueue(self.previous_process)
-                self.previous_process = None
 
         return self._ready_queue
