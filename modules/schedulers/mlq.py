@@ -34,30 +34,25 @@ class MLQ(Scheduler):
         return partialized_instance
 
     def is_queued(self, process: Process):
-        is_in_any_ready_queue = any(map(lambda layer : process in layer._ready_queue, self.__layers))
-        is_previous_in_round_robin = any(map(lambda layer : RoundRobin.is_instance(layer) and process == layer.previous_process, self.__layers))
-
-        return is_in_any_ready_queue or is_previous_in_round_robin
+        return any(map(lambda layer : process in layer._ready_queue, self.__layers))
 
     def run(self, timestamp: int, preempt: bool = True) -> List[Process]:
         current_layer = self.__layers[self._processor.current_process.queue_level] if self._processor.is_occupied else None
         arrived_processes = self.get_arrived_processes(timestamp)
 
-        if len(arrived_processes) > 0:
+        # Preempt on the arrival of a higher queue level process
+        if len(arrived_processes) > 0 and self._processor.is_occupied:
             process_with_lowest_queue_level = min(list(map(lambda p : p.queue_level, arrived_processes)))
-            preempt = self._processor.is_occupied and self._processor.current_process.queue_level > process_with_lowest_queue_level 
+            higher_queue_level_process_arrived = self._processor.current_process.queue_level > process_with_lowest_queue_level 
         
-            if preempt and not self._processor.is_finished:
-                preempted_process = self._processor.clear()
+            if higher_queue_level_process_arrived and not self._processor.is_finished:
+                self._processor.clear()
 
-                if RoundRobin.is_instance(current_layer):
-                    current_layer.previous_process = preempted_process
-                else:
-                    current_layer.enqueue(preempted_process)
-
+        # Let the sub-schedulers do their own thing
         for layer in self.__layers:
             layer.run(timestamp, preempt=layer == current_layer) 
 
+        # Get topmost layer's ready queue
         if self._processor.is_idle:
             for layer in self.__layers:
                 if len(layer._ready_queue) > 0:
