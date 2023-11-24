@@ -12,7 +12,7 @@ class RoundRobin(Scheduler):
         self.__time_quantum: int = time_quantum
         self.__time_window: int = time_quantum
 
-        self._processor.on_clear(self.__reset_time_window)
+        self._processor.on_load(self.__reset_time_window)
 
         if is_decrement_automatic:
             self._processor.on_tick(self.decrement_time_window)
