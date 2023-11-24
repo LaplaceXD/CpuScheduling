@@ -135,7 +135,6 @@ def main():
     if scheduler_class == RoundRobin:
         time_quantum = input_bounded_num("Time quantum: ") 
         scheduler_instance = scheduler_class.create(time_quantum, True)
-        print()
     elif scheduler_class.is_multilevel:
         num_layers = input_bounded_num("Number of Layers: ")
 
