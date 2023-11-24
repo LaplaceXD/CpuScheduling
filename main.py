@@ -39,8 +39,8 @@ def print_metrics(oss: OS, with_prio: bool = False, with_queue_level: bool = Fal
 
         table.add_data(*data)
     
-    layer_gantts: List[Gantt] = [Gantt() for _ in range(len(layers))]
-    merged_gantt = Gantt()
+    layer_gantts: List[Gantt] = [Gantt(name="[{}]".format(i + 1), show_timestamps=i + 1 == len(layers)) for i in range(len(layers))]
+    merged_gantt = Gantt(name="[A]" if len(layers) > 0 else None)
     for trail in oss.execution_trail:
         name = "P" + str(trail.name) if type(trail.name) == int else trail.name
         time = trail.end
@@ -55,11 +55,9 @@ def print_metrics(oss: OS, with_prio: bool = False, with_queue_level: bool = Fal
 
     print("# GANTT CHART - TIMELINE")
     if len(layer_gantts) > 0:
-        print("## Layer Gantts")
         for layer_gantt in layer_gantts:
             layer_gantt.render()
         print()
-        print("## Merged Gantt")
 
     merged_gantt.render()
     print()

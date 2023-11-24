@@ -1,10 +1,13 @@
-from typing import List
+from typing import List, Optional
 from views import View
 
 class Gantt(View):
-    def __init__(self, cell_width: int = 4, start_time: int = 0):
+    def __init__(self, name: Optional[str] = None, show_timestamps: bool = True, cell_width: int = 4, start_time: int = 0):
         super().__init__(cell_width)
+        self.__name: Optional[str] = name 
+        self.__show_timestamps: bool = show_timestamps 
         self.__start_time: int = start_time
+        
         self.__labels: List[str] = []
         self.__timestamps: List[int] = []
 
@@ -16,11 +19,19 @@ class Gantt(View):
     
     def render(self):
         gantt = ""
-        bar_line = ("+" + "-" * self._cell_width) * len(self.__labels) + "+\n"
+        name_padding = ""
+        name = ""
+        if self.__name is not None:
+            name_padding = " " * (len(self.__name) + 1)
+            name = self.__name + " "
 
+        bar_line = name_padding + ("+" + "-" * self._cell_width) * len(self.__labels) + "+"
+
+        gantt += bar_line + "\n"
+        gantt += name + self._format_items(self.__labels) + "\n"
         gantt += bar_line
-        gantt += self._format_items(self.__labels) + "\n"
-        gantt += bar_line
-        gantt += str(self.__start_time) + self._format_items(self.__timestamps, sep=" ")
+        
+        if self.__show_timestamps:
+            gantt += "\n" + name_padding + str(self.__start_time) + self._format_items(self.__timestamps, sep=" ")
 
         print(gantt)
