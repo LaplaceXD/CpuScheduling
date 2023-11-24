@@ -29,7 +29,7 @@ class MLFQ(Scheduler):
         self.__layers.append(last_layer(processes, processor)) 
 
     @staticmethod
-    def allowed_last_layer_scheduler() -> List[Scheduler]:
+    def last_layer_choices() -> List[Scheduler]:
         return [FCFS, SJF, PriorityNP]
     
     @classmethod

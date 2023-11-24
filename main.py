@@ -71,7 +71,7 @@ def configure_mlq(num_layers: int):
     has_priority_field = False
     layers = []
     layer_names = []
-    layer_choices = MLQ.allowed_schedulers()
+    layer_choices = MLQ.layer_choices()
     
     print(format_choice_list(list(map(lambda s : s.name, layer_choices))))
     for layer_num in range(num_layers):
@@ -92,7 +92,7 @@ def configure_mlq(num_layers: int):
     return (MLQ.create(layers), layer_names, has_priority_field)
 
 def configure_mlfq(num_layers: int):
-    allowed_last_layers = MLFQ.allowed_last_layer_scheduler()
+    allowed_last_layers = MLFQ.last_layer_choices()
     layer_names = []
     time_quantums = []
 

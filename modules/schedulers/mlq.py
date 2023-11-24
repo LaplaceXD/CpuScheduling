@@ -25,7 +25,7 @@ class MLQ(Scheduler):
             self.__layers.append(layer)
 
     @staticmethod
-    def allowed_schedulers() -> List[Scheduler]:
+    def layer_choices() -> List[Scheduler]:
         return [FCFS, SJF, PriorityNP, Priority, RoundRobin, SRTF]
     
     @classmethod
