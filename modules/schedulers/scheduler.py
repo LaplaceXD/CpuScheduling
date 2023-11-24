@@ -6,8 +6,8 @@ from modules import Processor
 
 class Scheduler(ABC):
     name: str = "Scheduler"
-    is_priority_required: bool = False
-    is_queue_level_required: bool = False
+    has_priority_field: bool = False
+    has_queue_level_field: bool = False
     is_multilevel: bool = False
 
     def __init__(self, processes: List[Process], processor: Processor):

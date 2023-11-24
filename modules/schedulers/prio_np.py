@@ -3,7 +3,7 @@ from .scheduler import Scheduler
 
 class PriorityNP(Scheduler):
     name: str = "Priority Non-Preemptive (Prio-NP)"
-    is_priority_required: bool = True
+    has_priority_field: bool = True
 
     def enqueue(self, *processes: Process):
         self._ready_queue.extend(processes)

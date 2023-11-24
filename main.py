@@ -1,5 +1,5 @@
 import os
-from typing import List, Optional, Any
+from typing import List
 
 from modules import OS
 from modules.schedulers import Scheduler, FCFS, SJF, PriorityNP, Priority, RoundRobin, SRTF, MLQ, MLFQ
@@ -10,15 +10,15 @@ from utils.io import input_bounded_num
 def format_choice_list(choices: List[str]):
     return "\n".join(["[{}] {}".format(idx + 1, choices[idx]) for idx in range(len(choices))])
 
-def print_metrics(oss: OS, with_prio: bool = False, with_queue_level: bool = False, layers: List[str] = []):
+def print_metrics(oss: OS, has_priority_field: bool = False, has_queue_level_field: bool = False, layers: List[str] = []):
     # Create the Table
     table_headers = ["PID", "AT", "BT", "CT", "TAT", "WT"] 
-    if with_prio:
+    if has_priority_field:
         # Insert at the index before CT
         idx = len(table_headers) - 3 
         table_headers.insert(idx, "Prio")
     
-    if with_queue_level:
+    if has_queue_level_field:
         # Insert at the index before CT
         idx = len(table_headers) - 3 
         table_headers.insert(idx, "QL")
@@ -27,12 +27,12 @@ def print_metrics(oss: OS, with_prio: bool = False, with_queue_level: bool = Fal
     
     for p in oss.processes:
         data = ["P" + str(p.pid), p.arrival, p.burst, p.completion, p.turnaround, p.waiting]
-        if with_prio:
+        if has_priority_field:
             # Insert at the index before completion time
             idx = len(data) - 3 
             data.insert(idx, p.priority)
     
-        if with_queue_level:
+        if has_queue_level_field:
             # Insert at the index before completion time
             idx = len(data) - 3 
             data.insert(idx, p.queue_level + 1)
@@ -68,7 +68,7 @@ def print_metrics(oss: OS, with_prio: bool = False, with_queue_level: bool = Fal
     print("Average WT: {:.2f}".format(sum(p.waiting for p in oss.processes) / len(oss.processes)))    
 
 def configure_mlq(num_layers: int):
-    with_prio = False
+    has_priority_field = False
     layers = []
     layer_names = []
     layer_choices = MLQ.allowed_schedulers()
@@ -86,10 +86,10 @@ def configure_mlq(num_layers: int):
             layer_names.append(layer_scheduler.name)
             layers.append(layer_scheduler.create())
 
-        if layer_scheduler.is_priority_required:
-            with_prio = True
+        if layer_scheduler.has_priority_field:
+            has_priority_field = True
 
-    return (MLQ.create(layers), layer_names, with_prio)
+    return (MLQ.create(layers), layer_names, has_priority_field)
 
 def configure_mlfq(num_layers: int):
     allowed_last_layers = MLFQ.allowed_last_layer_scheduler()
@@ -107,9 +107,9 @@ def configure_mlfq(num_layers: int):
     
     end_layer = allowed_last_layers[selected_end_layer - 1]
     layer_names.append(end_layer.name)
-    with_prio = end_layer.is_priority_required
+    has_priority_field = end_layer.has_priority_field
 
-    return (MLFQ.create(time_quantums, end_layer.create()), layer_names, with_prio)
+    return (MLFQ.create(time_quantums, end_layer.create()), layer_names, has_priority_field)
 
 def main():
     process_list: List[Process] = []
@@ -123,8 +123,8 @@ def main():
 
     # Retrieve scheduler and its details
     scheduler_class: Scheduler = scheduler_choices[scheduler_choice - 1]
-    with_prio: bool = scheduler_class.is_priority_required
-    with_queue_level: bool = scheduler_class.is_queue_level_required
+    has_priority_field: bool = scheduler_class.has_priority_field
+    has_queue_level_field: bool = scheduler_class.has_queue_level_field
 
     # Configure chosen scheduler 
     time_quantum: int = 0
@@ -140,9 +140,9 @@ def main():
         num_layers = input_bounded_num("Number of Layers: ")
 
         if scheduler_class == MLQ:
-            scheduler_instance, layer_names, with_prio = configure_mlq(num_layers)
+            scheduler_instance, layer_names, has_priority_field = configure_mlq(num_layers)
         elif scheduler_class == MLFQ:
-            scheduler_instance, layer_names, with_prio = configure_mlfq(num_layers)
+            scheduler_instance, layer_names, has_priority_field = configure_mlfq(num_layers)
         
     else:
         print("Has no extra configuration required.")
@@ -156,13 +156,13 @@ def main():
         pid = next(Process.id_sequence)
 
         print("===== P" + str(pid) + " Details =====")
-        if scheduler_class.is_queue_level_required:
+        if scheduler_class.has_queue_level_field:
             print(format_choice_list(layer_names), end="\n\n")
         
         arrival_time = input_bounded_num("Arrival Time: ", 0) 
         burst_time = input_bounded_num("Burst Time: ")
-        priority = input_bounded_num("Priority: ") if with_prio else 1
-        queue_level = input_bounded_num("Queue Level: ") if with_queue_level else 1
+        priority = input_bounded_num("Priority: ") if has_priority_field else 1
+        queue_level = input_bounded_num("Queue Level: ") if has_queue_level_field else 1
 
         process = Process(pid, arrival_time, burst_time, priority, queue_level - 1)
         process_list.append(process)
@@ -181,7 +181,7 @@ def main():
         print(format_choice_list)
 
     print()
-    print_metrics(oss, with_prio, scheduler_class.is_queue_level_required, layer_names)
+    print_metrics(oss, has_priority_field, scheduler_class.has_queue_level_field, layer_names)
     
 if __name__ == "__main__":
     main()
