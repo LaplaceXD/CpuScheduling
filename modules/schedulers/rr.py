@@ -12,8 +12,6 @@ class RoundRobin(Scheduler):
         self.__time_quantum: int = time_quantum
         self.__time_window: int = time_quantum
 
-        self._processor.on_load(self.__reset_time_window)
-
         if is_decrement_automatic:
             self._processor.on_tick(self.decrement_time_window)
     
@@ -24,20 +22,24 @@ class RoundRobin(Scheduler):
         return partialized_instance
 
     @property
-    def time_quantum(self):
-        return self.__time_quantum
-
-    def __reset_time_window(self, _: Process):
-        """ Resets the time window to the original time quantum value. """
-        self.__time_window = self.__time_quantum 
+    def is_time_window_consumed(self):
+        """ Checks whether the time window has been fully consumed by the running process. """
+        return self.__time_window == 0
 
     def decrement_time_window(self, current_process: Process):
         """ Decrements the time window as long as there is a process being processed. """
         self.__time_window -= 1
-        
-        if self.__time_window == 0 and not current_process.is_depleted:
-            self._processor.clear()
+
+        if self.__time_window == 0 or current_process.is_depleted:
+            if not current_process.is_depleted:
+                self._processor.clear()
+            
+            self.__time_window = self.__time_quantum
     
+    def requeue(self, process: Process):
+        """ Requeues a process at the start of the queue. """
+        self._ready_queue.insert(0, process)
+
     def enqueue(self, *processes: Process):
         # The first sorting condition is just to make sure that previous processes are appended at the end
         self._ready_queue.extend(sorted(processes, key=lambda p : (0 if p.burst == p.burst_remaining else 1, p.arrival, p.pid)))

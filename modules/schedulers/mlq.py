@@ -47,7 +47,13 @@ class MLQ(Scheduler):
             higher_queue_level_process_arrived = self._processor.current_process.queue_level > process_with_lowest_queue_level 
         
             if is_allowed_to_preempt and higher_queue_level_process_arrived and self._processor.is_occupied and not self._processor.is_finished:
-                self._processor.clear()
+                preempted_process = self._processor.clear()
+                
+                # Preserve the time window if the round robin was not able to fully allow a process to completely run
+                if isinstance(current_layer, RoundRobin) and not current_layer.is_time_window_consumed:
+                    current_layer.requeue(preempted_process)
+                
+                current_layer = None
 
         # Let the sub-schedulers do their own thing
         for layer in self.__layers:
