@@ -1,4 +1,4 @@
-from typing import List, Callable, Optional
+from typing import List, Callable
 
 from models import Process
 from modules import Processor

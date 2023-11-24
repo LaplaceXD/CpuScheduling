@@ -1,4 +1,4 @@
-from typing import Callable, List, Optional
+from typing import Callable, List
 
 from .scheduler import Scheduler
 from models import Process
