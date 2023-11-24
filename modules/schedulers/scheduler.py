@@ -19,11 +19,6 @@ class Scheduler(ABC):
         return self.name
     
     @classmethod
-    def is_instance(cls, scheduler_instance: 'Scheduler'):
-        """ Checks whether a given instance is an instance of this scheduler class. """
-        return cls.name == scheduler_instance.name
-    
-    @classmethod
     def create(cls):
         """ A method that returns a partially instantiated scheduler that can be latched onto the operating system for use. """
         partialized_instance: Callable[[List[Process], Processor], cls] = lambda pl, p : cls(pl, p)
@@ -46,7 +41,6 @@ class Scheduler(ABC):
         """ Gets all the arrived processes from the waiting queue based on a given timestamp. """
         return list(filter(lambda p : p.arrival <= timestamp, self.waiting_queue))
     
-
     @abstractmethod
     def run(self, timestamp: int, is_allowed_to_preempt: bool = True) -> List[Process]:
         """ Runs the scheduler at a given timestamp to process the ready queue. """

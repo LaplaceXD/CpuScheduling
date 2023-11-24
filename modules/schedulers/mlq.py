@@ -17,7 +17,7 @@ class MLQ(Scheduler):
             ql_processes = list(filter(lambda p : p.queue_level == ql, processes))
             layer = layers[ql](ql_processes, processor)
             
-            if RoundRobin.is_instance(layer):
+            if isinstance(layer, RoundRobin):
                 # Ensures that when two or more round robins exists, only the running round robin is ticking its time window
                 # The l = layer is a workaround to keep the layer block scoped, as layer is local scoped 
                 self._processor.on_clear(lambda _, l = layer : self._processor.off_tick(l.decrement_time_window))
@@ -58,7 +58,7 @@ class MLQ(Scheduler):
             for layer in self.__layers:
                 if len(layer._ready_queue) > 0:
                     self._ready_queue = layer._ready_queue
-                    if RoundRobin.is_instance(layer):
+                    if isinstance(layer, RoundRobin):
                         self._processor.on_tick(layer.decrement_time_window)
                     break 
 
