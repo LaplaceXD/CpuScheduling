@@ -45,15 +45,15 @@ class OS:
 
     def run(self):
         """ Runs the operating system. """ 
-        while any(map(lambda p : not p.is_marked_ended, self.__processes)):
+        while any(map(lambda p : not p.is_marked_completed, self.__processes)):
             self.__running_time += 1
   
             if self.__processor.is_occupied:
                 self.__processor.run()
                 
                 if self.__processor.is_finished:
-                    self.__processor.current_process.end(self.__running_time)
-                    self.__processor.clear()
+                    completed_process = self.__processor.clear()
+                    completed_process.mark_completed_on(self.__running_time) 
   
             ready_queue = self.__scheduler.run(self.__running_time)
 

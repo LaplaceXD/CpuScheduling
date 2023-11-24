@@ -31,7 +31,7 @@ class Scheduler(ABC):
     @property
     def waiting_queue(self):
         """ Returns the list of processes that have yet to be processed or ready. """
-        return list(filter(lambda p : not (p.is_marked_ended or self.is_queued(p) or p == self._processor.current_process), self._processes))
+        return list(filter(lambda p : not (p.is_marked_completed or self.is_queued(p) or p == self._processor.current_process), self._processes))
 
     def enqueue(self, *processes: Process):
         """ Adds processes to the ready queue. """

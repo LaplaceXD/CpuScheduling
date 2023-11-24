@@ -68,7 +68,7 @@ class Process:
         return self.__waiting
     
     @property
-    def is_marked_ended(self):
+    def is_marked_completed(self):
         return self.__completion is not None
 
     @property
@@ -79,7 +79,7 @@ class Process:
         """ Runs the process based on a given time quantum. """
         self.__burst_remaining -= time_quantum
 
-    def end(self, timestamp: int):
+    def mark_completed_on(self, timestamp: int):
         """ Marks the process as ended and records its time of completion based on a timestamp. """
         self.__completion = timestamp
         self.__turnaround = self.__completion - self.__arrival
