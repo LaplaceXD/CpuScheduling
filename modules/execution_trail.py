@@ -20,7 +20,7 @@ class ExecutionTrail:
     def last_execution_end_time(self):
         return self.__start_time if len(self.__trail) == 0 else self.__trail[-1].end
 
-    def add_frame(self, name: str, timestamp: int):
+    def add_frame(self, name: str, timestamp: int, tag: int = None):
         """ Add a frame to the execution trail and its corresponding timestamp. """
-        frame = ExecutionFrame(name, self.last_execution_end_time, timestamp)
+        frame = ExecutionFrame(name, self.last_execution_end_time, timestamp, tag)
         self.__trail.append(frame)

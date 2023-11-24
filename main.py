@@ -1,5 +1,5 @@
 import os
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from modules import OS
 from modules.schedulers import Scheduler, FCFS, SJF, PriorityNP, Priority, RoundRobin, SRTF, MLQ, MLFQ
@@ -10,8 +10,9 @@ from utils.io import input_bounded_num
 def format_choice_list(choices: List[str]):
     return "\n".join(["[{}] {}".format(idx + 1, choices[idx]) for idx in range(len(choices))])
 
-def print_metrics(oss: OS, with_prio: bool = False, with_queue_level: bool = False):
-    table_headers: List[str] = ["PID", "AT", "BT", "CT", "TAT", "WT"] 
+def print_metrics(oss: OS, with_prio: bool = False, with_queue_level: bool = False, layers: List[str] = []):
+    # Create the Table
+    table_headers = ["PID", "AT", "BT", "CT", "TAT", "WT"] 
     if with_prio:
         # Insert at the index before CT
         idx = len(table_headers) - 3 
@@ -22,7 +23,7 @@ def print_metrics(oss: OS, with_prio: bool = False, with_queue_level: bool = Fal
         idx = len(table_headers) - 3 
         table_headers.insert(idx, "QL")
 
-    table: Table = Table(headers=table_headers)
+    table = Table(headers=table_headers)
     
     for p in oss.processes:
         data = ["P" + str(p.pid), p.arrival, p.burst, p.completion, p.turnaround, p.waiting]
@@ -38,15 +39,29 @@ def print_metrics(oss: OS, with_prio: bool = False, with_queue_level: bool = Fal
 
         table.add_data(*data)
     
-    gantt: Gantt = Gantt()
+    layer_gantts: List[Gantt] = [Gantt() for _ in range(len(layers))]
+    merged_gantt = Gantt()
     for trail in oss.execution_trail:
-        gantt.add_data("P" + str(trail.name) if type(trail.name) == int else trail.name, trail.end)
+        name = "P" + str(trail.name) if type(trail.name) == int else trail.name
+        time = trail.end
+
+        for tag, layer_gantt in enumerate(layer_gantts):
+            layer_gantt.add_data(name if trail.tag == tag else "", time)
+
+        merged_gantt.add_data(name, time)
     
     print("# PROCESS TABLE")
     table.render()
 
     print("# GANTT CHART - TIMELINE")
-    gantt.render()
+    if len(layer_gantts) > 0:
+        print("## Layer Gantts")
+        for layer_gantt in layer_gantts:
+            layer_gantt.render()
+        print()
+        print("## Merged Gantt")
+
+    merged_gantt.render()
     print()
 
     print("# METRICS")
@@ -54,13 +69,12 @@ def print_metrics(oss: OS, with_prio: bool = False, with_queue_level: bool = Fal
     print("Average TAT: {:.2f}".format(sum(p.turnaround for p in oss.processes) / len(oss.processes)))
     print("Average WT: {:.2f}".format(sum(p.waiting for p in oss.processes) / len(oss.processes)))    
 
-def configure_round_robin(is_decrement_automatic: bool):
-    time_quantum = input_bounded_num("Time quantum: ") 
-    return RoundRobin.create(time_quantum, is_decrement_automatic)
-
 def configure_mlq(num_layers: int):
-    with_prio, mlq_layers, mlq_layer_names = (False, [], [])
+    with_prio = False
+    layers = []
+    layer_names = []
     layer_choices = MLQ.allowed_schedulers()
+    
     print(format_choice_list(list(map(lambda s : s.name, layer_choices))))
     for layer_num in range(num_layers):
         scheduler_choice = input_bounded_num("Layer #{}: ".format(layer_num + 1), max=len(layer_choices))
@@ -68,17 +82,16 @@ def configure_mlq(num_layers: int):
         layer_scheduler = layer_choices[scheduler_choice - 1]
         if layer_scheduler == RoundRobin:
             time_quantum = input_bounded_num("Time quantum: ") 
-            mlq_layer_names.append(layer_scheduler.name + " | q=" + str(time_quantum))
-            mlq_layers.append(layer_scheduler.create(time_quantum, False))
+            layer_names.append(layer_scheduler.name + " | q=" + str(time_quantum))
+            layers.append(layer_scheduler.create(time_quantum, False))
         else:
-            mlq_layer_names.append(layer_scheduler.name)
-            mlq_layers.append(layer_scheduler.create())
+            layer_names.append(layer_scheduler.name)
+            layers.append(layer_scheduler.create())
 
         if layer_scheduler.is_priority_required:
             with_prio = True
 
-    mlq_config = format_choice_list(mlq_layer_names)
-    return (MLQ.create(mlq_layers), mlq_config, with_prio)
+    return (MLQ.create(layers), layer_names, with_prio)
 
 def configure_mlfq(num_layers: int):
     allowed_last_layers = MLFQ.allowed_last_layer_scheduler()
@@ -98,51 +111,55 @@ def configure_mlfq(num_layers: int):
     layer_names.append(end_layer.name)
     with_prio = end_layer.is_priority_required
 
-    mlfq_config = format_choice_list(layer_names)
-    return (MLFQ.create(time_quantums, end_layer.create()), mlfq_config, with_prio)
+    return (MLFQ.create(time_quantums, end_layer.create()), layer_names, with_prio)
 
 def main():
     process_list: List[Process] = []
     scheduler_choices: List[Scheduler] = [FCFS, SJF, PriorityNP, Priority, RoundRobin, SRTF, MLQ, MLFQ] 
     
     print("===== CPU Scheduling Simulator =====")
+    
+    # Select a scheduler
     print(format_choice_list(list(map(lambda s : s.name, scheduler_choices))), end="\n\n")
     scheduler_choice = input_bounded_num("Select a scheduler: ", max=len(scheduler_choices))
 
-    scheduler: Scheduler = scheduler_choices[scheduler_choice - 1]
-    with_prio: bool = scheduler.is_priority_required
-    with_queue_level: bool = scheduler.is_queue_level_required
+    # Retrieve scheduler and its details
+    scheduler_class: Scheduler = scheduler_choices[scheduler_choice - 1]
+    with_prio: bool = scheduler_class.is_priority_required
+    with_queue_level: bool = scheduler_class.is_queue_level_required
 
-    time_quantum = 0
-    mlq_config = None
-    mlfq_config = None
-    scheduler_instance: Optional[Scheduler] = None
-    if scheduler == RoundRobin:
-        print("\n=====", scheduler.name, "Configuration =====")
+    # Configure chosen scheduler 
+    time_quantum: int = 0
+    layer_names: List[str] = []
+    scheduler_instance = None
+
+    print("\n=====", scheduler_class.name, "Configuration =====")
+    if scheduler_class == RoundRobin:
         time_quantum = input_bounded_num("Time quantum: ") 
-        scheduler_instance = scheduler.create(time_quantum, True)
+        scheduler_instance = scheduler_class.create(time_quantum, True)
         print()
-    elif scheduler == MLQ:
-        print("\n=====", scheduler.name, "Configuration =====")
+    elif scheduler_class.is_multilevel:
         num_layers = input_bounded_num("Number of Layers: ")
-        scheduler_instance, mlq_config, with_prio = configure_mlq(num_layers)
-        print()
-    elif scheduler == MLFQ:
-        print("\n=====", scheduler.name, "Configuration =====")
-        num_layers = input_bounded_num("Number of Layers: ")
-        scheduler_instance, mlfq_config, with_prio = configure_mlfq(num_layers)
-        print()
-    else:
-        scheduler_instance = scheduler.create()
 
+        if scheduler_class == MLQ:
+            scheduler_instance, layer_names, with_prio = configure_mlq(num_layers)
+        elif scheduler_class == MLFQ:
+            scheduler_instance, layer_names, with_prio = configure_mlfq(num_layers)
+        
+    else:
+        print("Has no extra configuration required.")
+        scheduler_instance = scheduler_class.create()
+    print()
+
+    # Configure processes to be processed
     num_of_processes = input_bounded_num("Number of processes: ")
     for _ in range(num_of_processes):
         os.system("cls")
         pid = next(Process.id_sequence)
 
         print("===== P" + str(pid) + " Details =====")
-        if with_queue_level:
-            print(mlq_config, end="\n\n")
+        if scheduler_class.is_queue_level_required:
+            print(format_choice_list(layer_names), end="\n\n")
         
         arrival_time = input_bounded_num("Arrival Time: ", 0) 
         burst_time = input_bounded_num("Burst Time: ")
@@ -152,23 +169,21 @@ def main():
         process = Process(pid, arrival_time, burst_time, priority, queue_level - 1)
         process_list.append(process)
 
+    # Instantiate operating system simulator with the given schedueler instance and processes
     oss = OS(scheduler_instance, process_list)
     oss.run()
 
+    # Print details of the configured scheduler, the results of execution, and metrics
     os.system("cls")
     print("===== CPU Scheduling Simulator =====")
-    print("Scheduler: ", scheduler.name, " | q=" + str(time_quantum) if scheduler is RoundRobin else "")
-    if scheduler == MLQ:
+    print("Scheduler: ", scheduler_class.name, " | q=" + str(time_quantum) if scheduler_class == RoundRobin else "")
+    if scheduler_class.is_multilevel:
         print()
         print("# LAYER CONFIGURATION")
-        print(mlq_config)
-    elif scheduler == MLFQ:
-        print()
-        print("# LAYER CONFIGURATION")
-        print(mlfq_config)
+        print(format_choice_list)
 
     print()
-    print_metrics(oss, with_prio, with_queue_level)
+    print_metrics(oss, with_prio, scheduler_class.is_queue_level_required, layer_names)
     
 if __name__ == "__main__":
     main()

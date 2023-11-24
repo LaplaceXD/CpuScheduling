@@ -6,6 +6,7 @@ from modules.schedulers import Scheduler, FCFS, SJF, PriorityNP, RoundRobin
 
 class MLFQ(Scheduler):
     name: str = "Multilevel Feedback Queue (MLFQ)"
+    is_multilevel: bool = True
 
     def __init__(self, processes: List[Process], processor: Processor, time_quantums: List[int], last_layer: Callable[[List[Process], Processor], Scheduler]):
         super().__init__(processes, processor)

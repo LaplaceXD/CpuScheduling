@@ -19,13 +19,13 @@ class OS:
 
     def __record_completed_process(self, completed_process: Process):
         """ Records the completed process to the execution trail. """
-        self.__trail.add_frame(completed_process.pid, self.__running_time) 
+        self.__trail.add_frame(completed_process.pid, self.__running_time, tag=completed_process.queue_level) 
 
-    def __record_idle_time(self, _: Process):
+    def __record_idle_time(self, loaded_process: Process):
         """ Records the idle time to the execution trail. """
         if self.__trail.last_execution_end_time < self.__running_time:
             self.__idle_time += self.__running_time - self.__trail.last_execution_end_time 
-            self.__trail.add_frame("idle", self.__running_time)
+            self.__trail.add_frame("idle", self.__running_time, tag=loaded_process.queue_level)
 
     @property
     def processes(self):

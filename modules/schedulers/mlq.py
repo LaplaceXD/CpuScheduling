@@ -7,6 +7,7 @@ from modules.schedulers import Scheduler, FCFS, SJF, PriorityNP, Priority, Round
 class MLQ(Scheduler):
     name: str = "Multilevel Queue (MLQ)"
     is_queue_level_required: bool = True
+    is_multilevel: bool = True
 
     def __init__(self, processes: List[Process], processor: Processor, layers: List[Callable[[List[Process], Processor], Scheduler]]):
         super().__init__(processes, processor)

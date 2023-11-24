@@ -8,6 +8,7 @@ class Scheduler(ABC):
     name: str = "Scheduler"
     is_priority_required: bool = False
     is_queue_level_required: bool = False
+    is_multilevel: bool = False
 
     def __init__(self, processes: List[Process], processor: Processor):
         self._processes: List[Process] = processes
