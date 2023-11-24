@@ -56,7 +56,7 @@ class MLFQ(Scheduler):
             if p.queue_level < len(self.round_robin_layers):
                 self.round_robin_layers[p.queue_level].enqueue(p)
 
-    def run(self, timestamp: int, preempt: bool = True):
+    def run(self, timestamp: int, is_allowed_to_preempt: bool = True):
         if self._processor.is_idle:
             arrived_processes = self.get_arrived_processes(timestamp)
                 
@@ -72,7 +72,7 @@ class MLFQ(Scheduler):
             
             # If there are no more processes on the top layers work on the last layer
             if len(self._ready_queue) == 0:
-                self.last_layer.run(timestamp, preempt=False)
+                self.last_layer.run(timestamp, is_allowed_to_preempt=False)
                 self._ready_queue = self.last_layer._ready_queue
 
         return self._ready_queue

@@ -47,6 +47,6 @@ class Scheduler(ABC):
     
 
     @abstractmethod
-    def run(self, timestamp: int, preempt: bool = True) -> List[Process]:
+    def run(self, timestamp: int, is_allowed_to_preempt: bool = True) -> List[Process]:
         """ Runs the scheduler at a given timestamp to process the ready queue. """
         pass

@@ -8,7 +8,7 @@ class FCFS(Scheduler):
         self._ready_queue.extend(processes)
         self._ready_queue.sort(key=lambda p : (p.arrival, p.pid))
 
-    def run(self, timestamp: int, preempt: bool = False):
+    def run(self, timestamp: int, is_allowed_to_preempt: bool = False):
         if self._processor.is_idle:
             arrived_processes = self.get_arrived_processes(timestamp)
         

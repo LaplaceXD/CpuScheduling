@@ -42,7 +42,7 @@ class RoundRobin(Scheduler):
         # The first sorting condition is just to make sure that previous processes are appended at the end
         self._ready_queue.extend(sorted(processes, key=lambda p : (0 if p.burst == p.burst_remaining else 1, p.arrival, p.pid)))
     
-    def run(self, timestamp: int, preempt: bool = False):
+    def run(self, timestamp: int, is_allowed_to_preempt: bool = False):
         if self._processor.is_idle:
             arrived_processes = self.get_arrived_processes(timestamp)
         

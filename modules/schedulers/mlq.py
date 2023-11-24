@@ -36,7 +36,7 @@ class MLQ(Scheduler):
     def is_queued(self, process: Process):
         return any(map(lambda layer : process in layer._ready_queue, self.__layers))
 
-    def run(self, timestamp: int, preempt: bool = True) -> List[Process]:
+    def run(self, timestamp: int, is_allowed_to_preempt: bool = True) -> List[Process]:
         current_layer = self.__layers[self._processor.current_process.queue_level] if self._processor.is_occupied else None
         arrived_processes = self.get_arrived_processes(timestamp)
 
@@ -45,12 +45,12 @@ class MLQ(Scheduler):
             process_with_lowest_queue_level = min(list(map(lambda p : p.queue_level, arrived_processes)))
             higher_queue_level_process_arrived = self._processor.current_process.queue_level > process_with_lowest_queue_level 
         
-            if higher_queue_level_process_arrived and not self._processor.is_finished:
+            if is_allowed_to_preempt and higher_queue_level_process_arrived and self._processor.is_occupied and not self._processor.is_finished:
                 self._processor.clear()
 
         # Let the sub-schedulers do their own thing
         for layer in self.__layers:
-            layer.run(timestamp, preempt=layer == current_layer) 
+            layer.run(timestamp, is_allowed_to_preempt=layer == current_layer) 
 
         # Get topmost layer's ready queue
         if self._processor.is_idle:
