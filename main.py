@@ -177,7 +177,7 @@ def main():
     if scheduler_class.is_multilevel:
         print()
         print("# LAYER CONFIGURATION")
-        print(format_choice_list)
+        print(format_choice_list(layer_names))
 
     print()
     print_metrics(oss, has_priority_field, scheduler_class.has_queue_level_field, layer_names)
