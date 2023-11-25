@@ -1,7 +1,7 @@
 from typing import List
 
+from models import Process
 from .schedulers import Scheduler
-from .models import Process
 from .execution_trail import ExecutionTrail
 from .processor import Processor
 

@@ -1,7 +1,7 @@
 from typing import Callable, List
 
-from ..models import Process
-from ..processor import Processor
+from models import Process
+from modules import Processor
 from .scheduler import Scheduler
 
 class RoundRobin(Scheduler):

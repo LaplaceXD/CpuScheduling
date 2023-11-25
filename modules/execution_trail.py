@@ -1,5 +1,5 @@
 from typing import List
-from .models import ExecutionFrame
+from models import ExecutionFrame
 
 class ExecutionTrail:
     """ A class that keeps track of a list of execution frames, and trails them successively. """

@@ -1,7 +1,7 @@
 from typing import List, Callable
 from abc import ABC, abstractmethod
 
-from ..models import Process
+from models import Process
 from ..processor import Processor
 
 class Scheduler(ABC):

@@ -1,7 +1,7 @@
 from typing import List, Callable
 
-from ..models import Process
-from ..processor import Processor
+from models import Process
+from modules import Processor
 from ..schedulers import Scheduler, FCFS, SJF, PriorityNP, Priority, RoundRobin, SRTF
 
 class MLQ(Scheduler):

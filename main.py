@@ -1,5 +1,6 @@
 import os
-from scheduling_sim.main import main as scheduling_main
+
+from scheduling import main as scheduling_main
 from utils.io import input_bounded_num
 from views import View
 

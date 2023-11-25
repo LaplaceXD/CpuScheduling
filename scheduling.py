@@ -1,13 +1,36 @@
 import os
 from typing import List
 
-from .models import Process
-from .os import OS
-from .schedulers import Scheduler, FCFS, SJF, PriorityNP, Priority, RoundRobin, SRTF, MLQ, MLFQ
+from models import Process
+from modules.os import OS
+from modules.schedulers import Scheduler, FCFS, SJF, PriorityNP, Priority, RoundRobin, SRTF, MLQ, MLFQ
 from views import View, TableView, GanttView
 from utils.io import input_bounded_num
 
-def print_metrics(oss: OS, has_priority_field: bool = False, has_queue_level_field: bool = False, layers: List[str] = []):
+def create_process_execution_gantt(oss: OS, layers: List[str] = []):
+    layer_gantts = [GanttView(name="[{}]".format(i + 1), show_timestamps=i + 1 == len(layers)) for i in range(len(layers))]
+    merged_gantt = GanttView(name="[A]" if len(layers) > 0 else None)
+    for trail in oss.execution_trail:
+        name = "P" + str(trail.name) if type(trail.name) == int else trail.name
+        time = trail.end
+
+        for tag, layer_gantt in enumerate(layer_gantts):
+            layer_gantt.add_item(name if trail.tag == tag else "", time)
+
+        merged_gantt.add_item(name, time)
+
+    return merged_gantt, layer_gantts
+
+def create_os_metrics(oss: OS):
+    metrics = ""
+    
+    metrics += "CPU Utilization: {:.2f}%\n".format((float(oss.running_time - oss.idle_time) / float(oss.running_time)) * 100)
+    metrics += "Average TAT: {:.2f}\n".format(sum(p.turnaround for p in oss.processes) / len(oss.processes))
+    metrics += "Average TAT: {:.2f}".format(sum(p.waiting for p in oss.processes) / len(oss.processes))
+    
+    return metrics
+
+def create_process_table_summary(oss: OS, has_priority_field: bool, has_queue_level_field: bool):
     table_headers = ["PID", "AT", "BT", "CT", "TAT", "WT"] 
     if has_priority_field:
         # Insert at the index before CT
@@ -24,45 +47,18 @@ def print_metrics(oss: OS, has_priority_field: bool = False, has_queue_level_fie
     for p in oss.processes:
         data = ["P" + str(p.pid), p.arrival, p.burst, p.completion, p.turnaround, p.waiting]
         if has_priority_field:
-            # Insert at the index before completion time
+            # Insert at the index before p.completion
             idx = len(data) - 3 
             data.insert(idx, p.priority)
     
         if has_queue_level_field:
-            # Insert at the index before completion time
+            # Insert at the index before p.completion
             idx = len(data) - 3 
             data.insert(idx, p.queue_level + 1)
 
         table.add_item(*data)
     
-    layer_gantts = [GanttView(name="[{}]".format(i + 1), show_timestamps=i + 1 == len(layers)) for i in range(len(layers))]
-    merged_gantt = GanttView(name="[A]" if len(layers) > 0 else None)
-    for trail in oss.execution_trail:
-        name = "P" + str(trail.name) if type(trail.name) == int else trail.name
-        time = trail.end
-
-        for tag, layer_gantt in enumerate(layer_gantts):
-            layer_gantt.add_item(name if trail.tag == tag else "", time)
-
-        merged_gantt.add_item(name, time)
-    
-    print("# PROCESS TABLE")
-    table.render()
-    print()
-
-    print("# GANTT CHART - TIMELINE")
-    if len(layer_gantts) > 0:
-        for layer_gantt in layer_gantts:
-            layer_gantt.render()
-        print()
-
-    merged_gantt.render()
-    print()
-
-    print("# METRICS")
-    print("CPU Utilization: {:.2f}%".format((float(oss.running_time - oss.idle_time) / float(oss.running_time)) * 100))
-    print("Average TAT: {:.2f}".format(sum(p.turnaround for p in oss.processes) / len(oss.processes)))
-    print("Average WT: {:.2f}".format(sum(p.waiting for p in oss.processes) / len(oss.processes)))    
+    return table
 
 def configure_mlq(num_layers: int):
     has_priority_field = False
@@ -86,7 +82,7 @@ def configure_mlq(num_layers: int):
         if layer_scheduler.has_priority_field:
             has_priority_field = True
 
-    return (MLQ.create(layers), layer_names, has_priority_field)
+    return MLQ.create(layers), layer_names, has_priority_field
 
 def configure_mlfq(num_layers: int):
     allowed_last_layers = MLFQ.last_layer_choices()
@@ -106,7 +102,7 @@ def configure_mlfq(num_layers: int):
     layer_names.append(end_layer.name)
     has_priority_field = end_layer.has_priority_field
 
-    return (MLFQ.create(time_quantums, end_layer.create()), layer_names, has_priority_field)
+    return MLFQ.create(time_quantums, end_layer.create()), layer_names, has_priority_field
 
 def main():
     process_list: List[Process] = []
@@ -174,9 +170,25 @@ def main():
         print()
         print("# LAYER CONFIGURATION")
         print(View.numbered_list(layer_names))
-
     print()
-    print_metrics(oss, has_priority_field, scheduler_class.has_queue_level_field, layer_names)
     
+    print("# PROCESS TABLE")
+    table = create_process_table_summary(oss, has_priority_field, has_queue_level_field)
+    table.render()
+    print()
+
+    print("# GANTT CHART - TIMELINE")
+    merged_gantt, layer_gantts = create_process_execution_gantt(oss, layer_names)
+    if len(layer_gantts) > 0:
+        for layer_gantt in layer_gantts:
+            layer_gantt.render()
+        print()
+    merged_gantt.render()
+    print()
+
+    print("# METRICS")
+    metrics = create_os_metrics(oss)
+    print(metrics)
+
 if __name__ == "__main__":
     main()
