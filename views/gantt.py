@@ -1,7 +1,7 @@
 from typing import List, Optional
 from views import View
 
-class Gantt(View):
+class GanttView(View):
     def __init__(self, name: Optional[str] = None, show_timestamps: bool = True, cell_width: int = 4, start_time: int = 0):
         super().__init__(cell_width)
         self.__name: Optional[str] = name 
@@ -11,13 +11,8 @@ class Gantt(View):
         self.__labels: List[str] = []
         self.__timestamps: List[int] = []
 
-    def add_data(self, name: str, time: int):
-        """ Add data to the gantt. """
-        self.__labels.append(name)
-        self.__timestamps.append(time)
-        return self
-    
-    def render(self):
+
+    def __str__(self):
         gantt = ""
         name_padding = ""
         name = ""
@@ -33,5 +28,14 @@ class Gantt(View):
         
         if self.__show_timestamps:
             gantt += "\n" + name_padding + str(self.__start_time) + self._format_items(self.__timestamps, sep=" ")
+        
+        return gantt
 
-        print(gantt)
+    def add_data(self, name: str, time: int):
+        """ Add data to the gantt. """
+        self.__labels.append(name)
+        self.__timestamps.append(time)
+        return self
+
+    def render(self):
+        print(self)

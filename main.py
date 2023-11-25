@@ -4,7 +4,7 @@ from typing import List
 from modules import OS
 from modules.schedulers import Scheduler, FCFS, SJF, PriorityNP, Priority, RoundRobin, SRTF, MLQ, MLFQ
 from models import Process
-from views import Table, Gantt
+from views import TableView, GanttView
 from utils.io import input_bounded_num
 
 def format_choice_list(choices: List[str]):
@@ -23,7 +23,7 @@ def print_metrics(oss: OS, has_priority_field: bool = False, has_queue_level_fie
         idx = len(table_headers) - 3 
         table_headers.insert(idx, "QL")
 
-    table = Table(headers=table_headers)
+    table = TableView(headers=table_headers)
     
     for p in oss.processes:
         data = ["P" + str(p.pid), p.arrival, p.burst, p.completion, p.turnaround, p.waiting]
@@ -39,8 +39,8 @@ def print_metrics(oss: OS, has_priority_field: bool = False, has_queue_level_fie
 
         table.add_data(*data)
     
-    layer_gantts: List[Gantt] = [Gantt(name="[{}]".format(i + 1), show_timestamps=i + 1 == len(layers)) for i in range(len(layers))]
-    merged_gantt = Gantt(name="[A]" if len(layers) > 0 else None)
+    layer_gantts = [GanttView(name="[{}]".format(i + 1), show_timestamps=i + 1 == len(layers)) for i in range(len(layers))]
+    merged_gantt = GanttView(name="[A]" if len(layers) > 0 else None)
     for trail in oss.execution_trail:
         name = "P" + str(trail.name) if type(trail.name) == int else trail.name
         time = trail.end
