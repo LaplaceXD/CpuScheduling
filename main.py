@@ -4,11 +4,8 @@ from typing import List
 from modules import OS
 from modules.schedulers import Scheduler, FCFS, SJF, PriorityNP, Priority, RoundRobin, SRTF, MLQ, MLFQ
 from models import Process
-from views import TableView, GanttView
+from views import View, TableView, GanttView
 from utils.io import input_bounded_num
-
-def format_choice_list(choices: List[str]):
-    return "\n".join(["[{}] {}".format(idx + 1, choices[idx]) for idx in range(len(choices))])
 
 def print_metrics(oss: OS, has_priority_field: bool = False, has_queue_level_field: bool = False, layers: List[str] = []):
     table_headers = ["PID", "AT", "BT", "CT", "TAT", "WT"] 
@@ -73,7 +70,7 @@ def configure_mlq(num_layers: int):
     layer_names = []
     layer_choices = MLQ.layer_choices()
     
-    print(format_choice_list(list(map(lambda s : s.name, layer_choices))))
+    print(View.numbered_list(map(lambda s : s.name, layer_choices)))
     for layer_num in range(num_layers):
         scheduler_choice = input_bounded_num("Layer #{}: ".format(layer_num + 1), max=len(layer_choices))
 
@@ -102,7 +99,7 @@ def configure_mlfq(num_layers: int):
         layer_names.append(RoundRobin.name + " | q=" + str(layer_time_quantum))
 
     print()
-    print(format_choice_list(list(map(lambda s : s.name, allowed_last_layers))), end="\n\n")
+    print(View.numbered_list(map(lambda s : s.name, allowed_last_layers)), end="\n\n")
     selected_end_layer = input_bounded_num("Select End Layer: ", max=len(allowed_last_layers))
     
     end_layer = allowed_last_layers[selected_end_layer - 1]
@@ -118,7 +115,7 @@ def main():
     print("===== CPU Scheduling Simulator =====")
     
     # Select a scheduler
-    print(format_choice_list(list(map(lambda s : s.name, scheduler_choices))), end="\n\n")
+    print(View.numbered_list(map(lambda s : s.name, scheduler_choices)), end="\n\n")
     scheduler_choice = input_bounded_num("Select a scheduler: ", max=len(scheduler_choices))
 
     # Retrieve scheduler and its details
@@ -156,7 +153,7 @@ def main():
 
         print("===== P" + str(pid) + " Details =====")
         if scheduler_class.has_queue_level_field:
-            print(format_choice_list(layer_names), end="\n\n")
+            print(View.numbered_list(layer_names), end="\n\n")
         
         arrival_time = input_bounded_num("Arrival Time: ", 0) 
         burst_time = input_bounded_num("Burst Time: ")
@@ -177,7 +174,7 @@ def main():
     if scheduler_class.is_multilevel:
         print()
         print("# LAYER CONFIGURATION")
-        print(format_choice_list(layer_names))
+        print(View.numbered_list(layer_names))
 
     print()
     print_metrics(oss, has_priority_field, scheduler_class.has_queue_level_field, layer_names)

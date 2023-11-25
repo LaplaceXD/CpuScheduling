@@ -1,5 +1,5 @@
 from itertools import count
-from typing import Any, List
+from typing import Any, Iterable, List
 from abc import ABC, abstractmethod
 
 class View(ABC):
@@ -39,6 +39,20 @@ class View(ABC):
     def _create_separator_line(self, joint: str = "+", line: str = "-"):
         return joint + joint.join([line * w for w in self._cell_widths]) + joint
 
+    def numbered_list(items: Iterable[Any], start_at: int = 1):
+        """ 
+            Turns a set of items into a string of numbered list. The numbering is sequential,
+            but the starting number can be changed by setting a starting number on the second
+            argument.
+
+            Example Output
+            --------------
+            [1] Numbered List Item \n
+            [2] Numbered List Item \n
+            [3] Numbered List Item
+        """
+        return "\n".join(["[{}] {}".format(i + start_at, str(item)) for i, item in enumerate(items)])
+    
     @abstractmethod
     def add_item(self):
         "Add an item to the view."
