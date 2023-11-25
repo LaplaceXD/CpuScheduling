@@ -4,21 +4,21 @@ A program used to simulate how schedulers work on an operating system running on
 
 ## Scheduling Algorithms
 
-**Scheduling algorithms** are used to manage the execution of processes in an operating system ensuring fairness, quick response times, maximized average turnaround time, minimized average waiting time and other criteria. These algorithms can be preemptive or non-preemptive. 
+**Scheduling algorithms** are used to manage the execution of processes in an operating system ensuring fairness, quick response times, maximized average turnaround time, minimized average waiting time, and other criteria. These algorithms can be preemptive or non-preemptive. 
 
 Preemptive scheduling algorithms allow the interruption of currently executing processes to start or resume another process, while non-preemptive scheduling algorithms do not permit such interruptions, requiring the currently running process to complete its execution before the next one starts.
 
 ### List of Scheduling Algorithms Implemented:
-| Scheduling Algorithm              | Preemptive | Scheduling Criteria              |
-| --------------------------------- | -----------| ---------------------------------|
-| First-Come-First-Serve (FCFS)      | No         | Arrival time                     |
-| Shortest Job First (SJF)           | No         | Burst time (execution time)      |
-| Priority Non-Preemptive (Prio-NP)  | No         | Priority assigned to each process|
-| Priority Preemptive (Prio-P)       | Yes        | Priority assigned to each process|
-| Round Robin (RR)                   | Yes        | Time quantum                    |
-| Shortest Remaining Time First (SRTF) | Yes      | Remaining Burst Time             |
-| Multilevel Queue Scheduling (MLQ) | Varies     | Queue Levels                    |
-| Multilevel Feedback Queue (MLFQ)   | Varies     | Feedback mechanism              |
+| Scheduling Algorithm                 | Preemptive | Scheduling Criteria               |
+| ------------------------------------ | ---------- | --------------------------------- |
+| First-Come-First-Serve (FCFS)        | No         | Arrival time                      |
+| Shortest Job First (SJF)             | No         | Burst time (execution time)       |
+| Priority Non-Preemptive (Prio-NP)    | No         | Priority assigned to each process |
+| Priority Preemptive (Prio-P)         | Yes        | Priority assigned to each process |
+| Round Robin (RR)                     | Yes        | Time quantum                      |
+| Shortest Remaining Time First (SRTF) | Yes        | Remaining Burst Time              |
+| Multilevel Queue (MLQ)               | Yes        | Queue Levels                      |
+| Multilevel Feedback Queue (MLFQ)     | Yes        | Feedback mechanism                |
 
 
 ### Limitation
