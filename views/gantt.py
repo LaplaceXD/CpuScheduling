@@ -15,7 +15,7 @@ class GanttView(View):
     def __str__(self):
         gantt = ""
         
-        name_padding = " " + (len(self.__name) + 1) if self.__name else "" 
+        name_padding = " " * (len(self.__name) + 1) if self.__name else "" 
         name = self.__name + " " if self.__name else "" 
         sep_line = name_padding + self._create_separator_line()
 
