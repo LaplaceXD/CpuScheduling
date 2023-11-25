@@ -1,36 +1,36 @@
 import os
 from typing import List
 
-from models import Process
-from modules import Kernel
+from models import Process, Clock, ProcessLog
+from modules import Processor
 from modules.schedulers import Scheduler, FCFS, SJF, PriorityNP, Priority, RoundRobin, SRTF, MLQ, MLFQ
 from views import View, TableView, GanttView
 from utils.io import input_bounded_num
 
-def create_process_execution_gantt(kernel: Kernel, layers: List[str] = []):
+def create_process_execution_gantt(process_dump: List[ProcessLog], layers: List[str] = []):
     layer_gantts = [GanttView(name="[{}]".format(i + 1), show_timestamps=i + 1 == len(layers)) for i in range(len(layers))]
     merged_gantt = GanttView(name="[A]" if len(layers) > 0 else None)
-    for trail in kernel.execution_timeline:
-        name = "P" + str(trail.name) if type(trail.name) == int else trail.name
-        time = trail.end
+    for log in process_dump:
+        name = "P" + str(log.name) if type(log.name) == int else log.name
+        time = log.end
 
         for tag, layer_gantt in enumerate(layer_gantts):
-            layer_gantt.add_item(name if trail.tag == tag else "", time)
+            layer_gantt.add_item(name if log.tag == tag else "", time)
 
         merged_gantt.add_item(name, time)
 
     return merged_gantt, layer_gantts
 
-def create_os_metrics(kernel: Kernel):
+def create_os_metrics(processes: List[Process], total_run_time: int, total_idle_time: int):
     metrics = ""
     
-    metrics += "CPU Utilization: {:.2f}%\n".format((float(kernel.running_time - kernel.idle_time) / float(kernel.running_time)) * 100)
-    metrics += "Average TAT: {:.2f}\n".format(sum(p.turnaround for p in kernel.processes) / len(kernel.processes))
-    metrics += "Average WT: {:.2f}".format(sum(p.waiting for p in kernel.processes) / len(kernel.processes))
+    metrics += "CPU Utilization: {:.2f}%\n".format((float(total_run_time - total_idle_time) / float(total_run_time)) * 100)
+    metrics += "Average TAT: {:.2f}\n".format(sum(p.turnaround for p in processes) / len(processes))
+    metrics += "Average WT: {:.2f}".format(sum(p.waiting for p in processes) / len(processes))
     
     return metrics
 
-def create_process_table_summary(kernel: Kernel, has_priority_field: bool, has_queue_level_field: bool):
+def create_process_table_summary(processes: List[Process], has_priority_field: bool, has_queue_level_field: bool):
     table_headers = ["PID", "AT", "BT", "CT", "TAT", "WT"] 
     if has_priority_field:
         # Insert at the index before CT
@@ -44,7 +44,7 @@ def create_process_table_summary(kernel: Kernel, has_priority_field: bool, has_q
 
     table = TableView(header=table_headers)
     
-    for p in kernel.processes:
+    for p in processes:
         data = ["P" + str(p.pid), p.arrival, p.burst, p.completion, p.turnaround, p.waiting]
         if has_priority_field:
             # Insert at the index before p.completion
@@ -158,9 +158,26 @@ def main():
         process = Process(pid + 1, arrival_time, burst_time, priority, queue_level - 1)
         process_list.append(process)
 
-    # Instantiate operating system simulator with the given schedueler instance and processes
-    kernel = Kernel(scheduler=scheduler_instance, processes=process_list)
-    kernel.run()
+    # Simulate a running operating system
+    clock = Clock(start_time=-1) # -1 = not started
+    processor = Processor(clock=clock)
+    scheduler = scheduler_instance(process_list, processor)
+
+    while any(map(lambda p : not p.is_marked_completed, process_list)):
+        clock.tick()
+
+        if processor.is_occupied:
+            processor.run()
+            
+            if processor.is_finished:
+                completed_process = processor.clear()
+                completed_process.mark_completed_on(clock.time) 
+
+        ready_queue = scheduler.run(clock.time)
+
+        if len(ready_queue) > 0 and processor.is_idle:
+            process = ready_queue.pop(0)
+            processor.load(process)
 
     # Print details of the configured scheduler, the results of execution, and metrics
     os.system("cls")
@@ -173,12 +190,12 @@ def main():
     print()
     
     print("# PROCESS TABLE")
-    table = create_process_table_summary(kernel, has_priority_field, has_queue_level_field)
+    table = create_process_table_summary(process_list, has_priority_field, has_queue_level_field)
     table.render()
     print()
 
     print("# GANTT CHART - TIMELINE")
-    merged_gantt, layer_gantts = create_process_execution_gantt(kernel, layer_names)
+    merged_gantt, layer_gantts = create_process_execution_gantt(processor.process_dump, layer_names)
     if len(layer_gantts) > 0:
         for layer_gantt in layer_gantts:
             layer_gantt.render()
@@ -187,7 +204,7 @@ def main():
     print()
 
     print("# METRICS")
-    metrics = create_os_metrics(kernel)
+    metrics = create_os_metrics(process_list, total_run_time=clock.time, total_idle_time=processor.idle_time)
     print(metrics)
 
 if __name__ == "__main__":
