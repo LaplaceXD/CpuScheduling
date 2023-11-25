@@ -1,16 +1,42 @@
-from typing import Optional, Callable
+from typing import Optional, Callable, List
 
 from utils.signal import Signal
-from models import Process
+from models import Clock, Process, ProcessLog
 
 class Processor:
-    def __init__(self):
-        self.__current_process: Optional[Process] = None
+    def __init__(self, clock: Clock):
+        self.__clock = clock
+        self.__start_time: int = 0
         
+        self.__idle_time: int = 0
+        self.__current_process: Optional[Process] = None
+        self.__process_logs: List[ProcessLog] = []
+
         self.__tick_signal = Signal[Process]()
         self.__clear_signal = Signal[Process]()
         self.__process_add_signal = Signal[Process]()
 
+        self.__clear_signal.listen(self.__record_cleared_process)
+        self.__process_add_signal.listen(self.__record_idle_time)
+
+    @property
+    def __last_log_end_time(self):
+        """ Retrieves the end time of the last item in the execution timeline."""
+        return self.__process_logs[-1].end if len(self.__process_logs) > 0 else self.__start_time
+
+    def __record_cleared_process(self, cleared_process: Process):
+        """ Records the cleared process to the logs. """
+        log = ProcessLog(cleared_process.pid, self.__last_log_end_time, self.__clock.time, tag=cleared_process.queue_level)
+        self.__process_logs.append(log)
+
+    def __record_idle_time(self, loaded_process: Process):
+        """ Records the idle time to the execution timeline. """
+        if self.__last_log_end_time < self.__clock.time:
+            self.__idle_time += self.__clock.time - self.__last_log_end_time
+            
+            log = ProcessLog("idle", self.__last_log_end_time, self.__clock.time, tag=loaded_process.queue_level)
+            self.__process_logs.append(log)
+    
     @property
     def is_idle(self):
         return self.__current_process is None
@@ -22,6 +48,15 @@ class Processor:
     @property
     def is_finished(self):
         return self.is_occupied and self.__current_process.is_depleted
+    
+    @property
+    def idle_time(self):
+        return self.__idle_time
+    
+    @property
+    def process_dump(self):
+        """ Retrieve the logs of the processes that were processed by the processor. """
+        return self.__process_logs
 
     @property
     def current_process(self):
