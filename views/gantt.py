@@ -14,14 +14,14 @@ class GanttView(View):
 
     def __str__(self):
         gantt = ""
+        
         name_padding = " " (len(self.__name) + 1) if self.__name else "" 
         name = self.__name + " " if self.__name else "" 
+        sep_line = name_padding + self._create_separator_line()
 
-        bar_line = name_padding + "+" + "+".join(["-" * w for w in self._cell_widths]) + "+"
-
-        gantt += bar_line + "\n"
+        gantt += sep_line + "\n"
         gantt += name + self._format_row(self.__labels) + "\n"
-        gantt += bar_line
+        gantt += sep_line
         
         if self.__show_timestamps:
             gantt += "\n" + name_padding + str(self.__start_time) + self._format_row(self.__timestamps, sep=" ")

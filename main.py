@@ -11,7 +11,6 @@ def format_choice_list(choices: List[str]):
     return "\n".join(["[{}] {}".format(idx + 1, choices[idx]) for idx in range(len(choices))])
 
 def print_metrics(oss: OS, has_priority_field: bool = False, has_queue_level_field: bool = False, layers: List[str] = []):
-    # Create the Table
     table_headers = ["PID", "AT", "BT", "CT", "TAT", "WT"] 
     if has_priority_field:
         # Insert at the index before CT
@@ -52,6 +51,7 @@ def print_metrics(oss: OS, has_priority_field: bool = False, has_queue_level_fie
     
     print("# PROCESS TABLE")
     table.render()
+    print()
 
     print("# GANTT CHART - TIMELINE")
     if len(layer_gantts) > 0:

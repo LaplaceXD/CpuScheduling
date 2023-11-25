@@ -12,17 +12,16 @@ class TableView(View):
 
     def __str__(self):
         table = ""
-
-        bar_line = "+" + "+".join(["-" * w for w in self._cell_widths]) + "+"
+        sep_line = self._create_separator_line()
 
         if len(self.__headers) > 0:
-            table += bar_line + "\n"
+            table += sep_line + "\n"
             table += self._format_row(self.__headers) + "\n"
 
-        table += bar_line + "\n"
+        table += sep_line + "\n"
         for data in self.__data:
             table += self._format_row(data) + "\n"
-        table += bar_line
+        table += sep_line
         
         return table
     

@@ -36,6 +36,9 @@ class View(ABC):
 
         return row
 
+    def _create_separator_line(self, joint: str = "+", line: str = "-"):
+        return joint + joint.join([line * w for w in self._cell_widths]) + joint
+
     @abstractmethod
     def render(self):
         """ Render the given view to the console. """
