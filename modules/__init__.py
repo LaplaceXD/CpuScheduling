@@ -1,2 +1,2 @@
 from .processor import Processor
-from .os import OS
+from .kernel import Kernel
