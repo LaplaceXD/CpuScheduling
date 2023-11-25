@@ -147,11 +147,10 @@ def main():
 
     # Configure processes to be processed
     num_of_processes = input_bounded_num("Number of processes: ")
-    for _ in range(num_of_processes):
+    for pid in range(num_of_processes):
         os.system("cls")
-        pid = next(Process.id_sequence)
 
-        print("===== P" + str(pid) + " Details =====")
+        print("===== P" + str(pid + 1) + " Details =====")
         if scheduler_class.has_queue_level_field:
             print(View.numbered_list(layer_names), end="\n\n")
         
@@ -160,7 +159,7 @@ def main():
         priority = input_bounded_num("Priority: ") if has_priority_field else 1
         queue_level = input_bounded_num("Queue Level: ") if has_queue_level_field else 1
 
-        process = Process(pid, arrival_time, burst_time, priority, queue_level - 1)
+        process = Process(pid + 1, arrival_time, burst_time, priority, queue_level - 1)
         process_list.append(process)
 
     # Instantiate operating system simulator with the given schedueler instance and processes

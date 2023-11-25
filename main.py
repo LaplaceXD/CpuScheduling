@@ -18,8 +18,15 @@ def main():
     print("What do you want to simulate?")
     choice = input_bounded_num("Choice: ", max=len(choices))
     
-    os.system("cls")
-    entries[choice - 1]()
+
+    is_interrupted = False 
+    while not is_interrupted:
+        os.system("cls")
+        entries[choice - 1]()
+        
+        status = input("\n\nContinue (type quit to exit)...")
+        if status and status.lower() == "quit":
+            is_interrupted = True
 
 if __name__ == "__main__":
     main()
