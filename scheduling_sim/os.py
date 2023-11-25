@@ -1,8 +1,9 @@
 from typing import List
 
-from models import Process
-from modules import ExecutionTrail, Processor
-from modules.schedulers import Scheduler
+from .schedulers import Scheduler
+from .models import Process
+from .execution_trail import ExecutionTrail
+from .processor import Processor
 
 class OS:
     def __init__(self, scheduler: Scheduler, processes: List[Process]):

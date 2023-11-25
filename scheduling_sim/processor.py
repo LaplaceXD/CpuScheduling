@@ -1,7 +1,7 @@
 from typing import Optional, Callable
 
-from models import Process
 from utils.signal import Signal
+from .models import Process
 
 class Processor:
     def __init__(self):

@@ -1,8 +1,8 @@
 from typing import Callable, List
 
+from ..models import Process
+from ..processor import Processor
 from .scheduler import Scheduler
-from models import Process
-from modules import Processor
 
 class RoundRobin(Scheduler):
     name: str = "Round Robin (RR)"

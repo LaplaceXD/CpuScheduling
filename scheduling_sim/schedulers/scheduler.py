@@ -1,8 +1,8 @@
 from typing import List, Callable
 from abc import ABC, abstractmethod
 
-from models import Process
-from modules import Processor
+from ..models import Process
+from ..processor import Processor
 
 class Scheduler(ABC):
     name: str = "Scheduler"

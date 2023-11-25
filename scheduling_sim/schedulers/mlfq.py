@@ -1,8 +1,8 @@
 from typing import List, Callable
 
-from models import Process
-from modules import Processor
-from modules.schedulers import Scheduler, FCFS, SJF, PriorityNP, RoundRobin
+from ..processor import Processor
+from ..schedulers import Scheduler, FCFS, SJF, PriorityNP, RoundRobin
+from ..models import Process
 
 class MLFQ(Scheduler):
     name: str = "Multilevel Feedback Queue (MLFQ)"
