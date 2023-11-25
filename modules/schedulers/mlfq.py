@@ -18,7 +18,7 @@ class MLFQ(Scheduler):
 
         # Initialize the layers
         for idx in range(len(time_quantums)):
-            rr_instance = RoundRobin.create(time_quantums[idx], False)
+            rr_instance = RoundRobin.factory(time_quantums[idx], False)
             layer = rr_instance(processes if idx == 0 else [], processor)
             
             # Ensures that only the running round robin is ticking its time window
@@ -33,7 +33,7 @@ class MLFQ(Scheduler):
         return [FCFS, SJF, PriorityNP]
     
     @classmethod
-    def create(cls, time_quantums: List[int], last_layer: Callable[[List[Process], Processor], Scheduler]):
+    def factory(cls, time_quantums: List[int], last_layer: Callable[[List[Process], Processor], Scheduler]):
         """ A method that returns a partially instantiated scheduler that can be latched onto the operating system for use. """
         partialized_instance: Callable[[List[Process], Processor], cls] = lambda pl, p : cls(pl, p, time_quantums, last_layer)
         return partialized_instance

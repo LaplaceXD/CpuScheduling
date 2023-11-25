@@ -74,15 +74,15 @@ def configure_mlq(num_layers: int):
         if layer_scheduler == RoundRobin:
             time_quantum = input_bounded_num("Time quantum: ") 
             layer_names.append(layer_scheduler.name + " | q=" + str(time_quantum))
-            layers.append(layer_scheduler.create(time_quantum, False))
+            layers.append(layer_scheduler.factory(time_quantum, False))
         else:
             layer_names.append(layer_scheduler.name)
-            layers.append(layer_scheduler.create())
+            layers.append(layer_scheduler.factory())
 
         if layer_scheduler.has_priority_field:
             has_priority_field = True
 
-    return MLQ.create(layers), layer_names, has_priority_field
+    return MLQ.factory(layers), layer_names, has_priority_field
 
 def configure_mlfq(num_layers: int):
     allowed_last_layers = MLFQ.last_layer_choices()
@@ -102,52 +102,49 @@ def configure_mlfq(num_layers: int):
     layer_names.append(end_layer.name)
     has_priority_field = end_layer.has_priority_field
 
-    return MLFQ.create(time_quantums, end_layer.create()), layer_names, has_priority_field
+    return MLFQ.factory(time_quantums, end_layer.factory()), layer_names, has_priority_field
 
 def main():
-    process_list: List[Process] = []
-    scheduler_choices: List[Scheduler] = [FCFS, SJF, PriorityNP, Priority, RoundRobin, SRTF, MLQ, MLFQ] 
-    
     print("===== CPU Scheduling Simulator =====")
     
     # Select a scheduler
+    scheduler_choices: List[Scheduler] = [FCFS, SJF, PriorityNP, Priority, RoundRobin, SRTF, MLQ, MLFQ] 
     print(View.numbered_list(map(lambda s : s.name, scheduler_choices)), end="\n\n")
     scheduler_choice = input_bounded_num("Select a scheduler: ", max=len(scheduler_choices))
 
-    # Retrieve scheduler and its details
-    scheduler_class: Scheduler = scheduler_choices[scheduler_choice - 1]
-    has_priority_field: bool = scheduler_class.has_priority_field
-    has_queue_level_field: bool = scheduler_class.has_queue_level_field
+    chosen_scheduler: Scheduler = scheduler_choices[scheduler_choice - 1]
+    has_priority_field: bool = chosen_scheduler.has_priority_field
+    has_queue_level_field: bool = chosen_scheduler.has_queue_level_field
 
-    # Configure chosen scheduler 
+    # Configure the chosen scheduler
     time_quantum: int = 0
     layer_names: List[str] = []
-    scheduler_instance = None
+    scheduler_factory = None
 
-    print("\n=====", scheduler_class.name, "Configuration =====")
-    if scheduler_class == RoundRobin:
+    print("\n=====", chosen_scheduler.name, "Configuration =====")
+    if chosen_scheduler == RoundRobin:
         time_quantum = input_bounded_num("Time quantum: ") 
-        scheduler_instance = scheduler_class.create(time_quantum, True)
-    elif scheduler_class.is_multilevel:
+        scheduler_factory = chosen_scheduler.factory(time_quantum, True)
+    elif chosen_scheduler.is_multilevel:
         num_layers = input_bounded_num("Number of Layers: ")
 
-        if scheduler_class == MLQ:
-            scheduler_instance, layer_names, has_priority_field = configure_mlq(num_layers)
-        elif scheduler_class == MLFQ:
-            scheduler_instance, layer_names, has_priority_field = configure_mlfq(num_layers)
-        
+        if chosen_scheduler == MLQ:
+            scheduler_factory, layer_names, has_priority_field = configure_mlq(num_layers)
+        elif chosen_scheduler == MLFQ:
+            scheduler_factory, layer_names, has_priority_field = configure_mlfq(num_layers)
     else:
         print("Has no extra configuration required.")
-        scheduler_instance = scheduler_class.create()
+        scheduler_factory = chosen_scheduler.factory()
     print()
 
     # Configure processes to be processed
+    process_list: List[Process] = []
     num_of_processes = input_bounded_num("Number of processes: ")
     for pid in range(num_of_processes):
         os.system("cls")
 
         print("===== P" + str(pid + 1) + " Details =====")
-        if scheduler_class.has_queue_level_field:
+        if has_queue_level_field:
             print(View.numbered_list(layer_names), end="\n\n")
         
         arrival_time = input_bounded_num("Arrival Time: ", 0) 
@@ -161,7 +158,7 @@ def main():
     # Simulate a running operating system
     clock = Clock(start_time=-1) # -1 = not started
     processor = Processor(clock=clock)
-    scheduler = scheduler_instance(process_list, processor)
+    scheduler = scheduler_factory(process_list, processor)
 
     while any(map(lambda p : not p.is_marked_completed, process_list)):
         clock.tick()
@@ -182,8 +179,8 @@ def main():
     # Print details of the configured scheduler, the results of execution, and metrics
     os.system("cls")
     print("===== CPU Scheduling Simulator =====")
-    print("Scheduler: ", scheduler_class.name, " | q=" + str(time_quantum) if scheduler_class == RoundRobin else "")
-    if scheduler_class.is_multilevel:
+    print("Scheduler: ", scheduler.name, " | q=" + str(time_quantum) if scheduler == RoundRobin else "")
+    if scheduler.is_multilevel:
         print()
         print("# LAYER CONFIGURATION")
         print(View.numbered_list(layer_names))

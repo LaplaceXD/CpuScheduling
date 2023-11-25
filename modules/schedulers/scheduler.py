@@ -19,10 +19,16 @@ class Scheduler(ABC):
         return self.name
     
     @classmethod
-    def create(cls):
-        """ A method that returns a partially instantiated scheduler that can be latched onto the operating system for use. """
-        partialized_instance: Callable[[List[Process], Processor], cls] = lambda pl, p : cls(pl, p)
-        return partialized_instance
+    def factory(cls):
+        """ 
+            A factory for schedulers that has some of their unique properties 
+            (e.g. time quantum, layers) partially initialized. This ensures that
+            when working with other schedulers only process_list and processor are
+            required, while still being able to initialize the scheduler with other
+            useful properties.
+        """
+        factory: Callable[[List[Process], Processor], cls] = lambda pl, p : cls(pl, p)
+        return factory
 
     @property
     def waiting_queue(self):

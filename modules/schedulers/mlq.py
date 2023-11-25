@@ -29,7 +29,7 @@ class MLQ(Scheduler):
         return [FCFS, SJF, PriorityNP, Priority, RoundRobin, SRTF]
     
     @classmethod
-    def create(cls, layers: List[Callable[[List[Process], Processor], Scheduler]]):
+    def factory(cls, layers: List[Callable[[List[Process], Processor], Scheduler]]):
         """ A method that returns a partially instantiated scheduler that can be latched onto the operating system for use. """
         partialized_instance: Callable[[List[Process], Processor], cls] = lambda pl, p : cls(pl, p, layers)
         return partialized_instance
