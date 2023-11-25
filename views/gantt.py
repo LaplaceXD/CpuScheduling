@@ -28,8 +28,7 @@ class GanttView(View):
         
         return gantt
 
-    def add_data(self, name: str, time: int):
-        """ Add data to the gantt. """
+    def add_item(self, name: str, time: int):
         self._adjust_cell_size_at(len(self.__labels), name)
         self.__labels.append(name)
         self.__timestamps.append(time)

@@ -40,6 +40,11 @@ class View(ABC):
         return joint + joint.join([line * w for w in self._cell_widths]) + joint
 
     @abstractmethod
+    def add_item(self):
+        "Add an item to the view."
+        pass
+
+    @abstractmethod
     def render(self):
         """ Render the given view to the console. """
         pass 

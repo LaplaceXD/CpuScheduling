@@ -25,8 +25,7 @@ class TableView(View):
         
         return table
     
-    def add_data(self, *data: Any):
-        """ Add data to the table. """
+    def add_item(self, *data: Any):
         self._adjust_cell_sizes_to_fit(*data)
         self.__data.append(data)
         return self
