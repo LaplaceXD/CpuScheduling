@@ -1,7 +1,7 @@
 class Clock:
     def __init__(self, start_time: int = 0):
-        self.__time = start_time
-        self.__start_time = start_time
+        self.__time: int = start_time
+        self.__start_time: int = start_time
 
     @property
     def start_time(self):

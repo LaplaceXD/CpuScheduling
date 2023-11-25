@@ -1,7 +1,8 @@
 from typing import Optional, Callable, List
 
 from utils.signal import Signal
-from models import Clock, Process, ProcessLog
+from models import Process, ProcessLog
+from .clock import Clock
 
 class Processor:
     def __init__(self, clock: Clock):

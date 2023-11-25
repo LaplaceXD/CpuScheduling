@@ -1,8 +1,8 @@
 import os
 from typing import List
 
-from models import Process, Clock, ProcessLog
-from modules import Processor
+from models import Process, ProcessLog
+from modules import Processor, Clock
 from modules.schedulers import Scheduler, FCFS, SJF, PriorityNP, Priority, RoundRobin, SRTF, MLQ, MLFQ
 from views import View, TableView, GanttView
 from utils.io import input_bounded_num
