@@ -31,7 +31,7 @@ class View(ABC):
 
         row = ""
         row += sep
-        row += sep.join(["{:>{}}".format(item, cell_width) for item, cell_width in zip(items, self._cell_widths)]) 
+        row += sep.join(["{:>{}}".format(str(item), cell_width) for item, cell_width in zip(items, self._cell_widths)]) 
         row += sep
 
         return row
