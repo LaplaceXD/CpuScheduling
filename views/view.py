@@ -9,18 +9,17 @@ class View(ABC):
     def _adjust_cell_size_at(self, at: int, content: Any):
         """ Adjust the cell size at a particular position to fit the length of a content. """
         if len(self._cell_widths) <= at:
-            for _ in range(len(self._cell_widths) - at + 1):
-                self._cell_widths.append(self._min_cell_width)
+            self._cell_widths += [self._min_cell_width] * (at - len(self._cell_widths) + 1)
 
         self._cell_widths[at] = max(len(str(content)), self._cell_widths[at])
 
     def _adjust_cell_sizes_to_fit(self, *content: Any):
         """ Adjust the cell sizes to fit according to the length of each stringified content. """
         if len(self._cell_widths) == 0:
-            self._cell_widths = [self._min_cell_width for _ in range(len(content))]
+            self._cell_widths = [self._min_cell_width] * len(content)
 
-        for i, c, w in zip(range(len(content)), content, self._cell_widths):
-            self._cell_widths[i] = max(len(str(c)), w)
+        for col, c in enumerate(content):
+            self._cell_widths[col] = max(len(str(c)), self._cell_widths[col])
     
     def _format_row(self, items: List[Any], sep: str = "|"):
         """ 
@@ -30,13 +29,13 @@ class View(ABC):
 
         row = ""
         row += sep
-        row += sep.join(["{:>{}}".format(str(item), cell_width) for item, cell_width in zip(items, self._cell_widths)]) 
+        row += sep.join("{:>{}}".format(str(item), cell_width) for item, cell_width in zip(items, self._cell_widths)) 
         row += sep
 
         return row
 
     def _create_separator_line(self, joint: str = "+", line: str = "-"):
-        return joint + joint.join([line * w for w in self._cell_widths]) + joint
+        return joint + joint.join(line * w for w in self._cell_widths) + joint
 
     def numbered_list(items_iter: Iterable[Any], start_at: int = 1, is_reversed: bool = False):
         """ 
@@ -52,7 +51,7 @@ class View(ABC):
         """
         # + 2 is to account for the char width of the brackets in the bullet
         items = list(items_iter)
-        number_bullet_width = len(str(len(list(items)) + 1)) + 2 
+        number_bullet_width = len(str(len(items) + 1)) + 2 
         numbered_list = []
 
         for i, item in enumerate(items):

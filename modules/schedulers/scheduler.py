@@ -33,7 +33,7 @@ class Scheduler(ABC):
     @property
     def waiting_queue(self):
         """ Returns the list of processes that have yet to be processed or ready. """
-        return list(filter(lambda p : not (p.is_marked_completed or self.is_queued(p) or p == self._processor.current_process), self._processes))
+        return [p for p in self._processes if not (p.is_marked_completed or self.is_queued(p) or p == self._processor.current_process)]
 
     def enqueue(self, *processes: Process):
         """ Adds processes to the ready queue. """
@@ -45,7 +45,7 @@ class Scheduler(ABC):
 
     def get_arrived_processes(self, timestamp: int):
         """ Gets all the arrived processes from the waiting queue based on a given timestamp. """
-        return list(filter(lambda p : p.arrival <= timestamp, self.waiting_queue))
+        return [p for p in self.waiting_queue if p.arrival <= timestamp]
     
     @abstractmethod
     def run(self, timestamp: int, is_allowed_to_preempt: bool = True) -> List[Process]:

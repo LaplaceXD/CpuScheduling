@@ -10,7 +10,7 @@ class Memory(ABC, Generic[T]):
     state_annotation: str = "No State"
     
     def __init__(self, frame_size: int):
-        self._memory: List[Optional[T]] = [None for _ in range(frame_size)]
+        self._memory: List[Optional[T]] = [None] * frame_size
         self._state: Any = None
         self._capacity: int = frame_size
         self._iter_ptr: int = 0

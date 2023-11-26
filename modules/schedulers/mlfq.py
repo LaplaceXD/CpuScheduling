@@ -17,9 +17,9 @@ class MLFQ(Scheduler):
             p.queue_level = -1
 
         # Initialize the layers
-        for idx in range(len(time_quantums)):
-            rr_instance = RoundRobin.factory(time_quantums[idx], False)
-            layer = rr_instance(processes if idx == 0 else [], processor)
+        for layer_num, time_quantum in enumerate(time_quantums):
+            rr_instance = RoundRobin.factory(time_quantum, is_decrement_automatic=False)
+            layer = rr_instance(processes if layer_num == 0 else [], processor)
             
             # Ensures that only the running round robin is ticking its time window
             # The l = layer is a workaround to keep the layer block scoped, as layer is local scoped 
@@ -47,7 +47,7 @@ class MLFQ(Scheduler):
         return self.__layers[-1]
 
     def is_queued(self, process: Process):
-        return any(map(lambda layer : process in layer._ready_queue, self.__layers))
+        return any(process in layer._ready_queue for layer in self.__layers)
 
     def enqueue(self, *processes: Process):
         # Queue the arrived processes to their next queue levels

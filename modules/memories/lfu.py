@@ -10,12 +10,12 @@ class LFU(Memory[T]):
 
     def __init__(self, frame_size: int):
         super().__init__(frame_size)
-        self._state: List[int] = [0 for _ in range(self._capacity)] # Frequency State
-        self.__time_state: List[T] = []                             # Time in Memory State
+        self._state: List[int] = [0] * self._capacity # Frequency State
+        self.__time_state: List[T] = []               # Time in Memory State
 
     @property
     def state(self):
-        page_freqs = zip(filter(lambda m : m is not None, self._memory), self._state)
+        page_freqs = zip((m for m in self._memory if m is not None), self._state)
         
         # Sort by count, then time in memory
         sorted_page_freqs = sorted(page_freqs, key=lambda pf : (pf[1], self.__time_state.index(pf[0])))

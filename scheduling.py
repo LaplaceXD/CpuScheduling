@@ -8,7 +8,7 @@ from views import View, TableView, GanttView
 from utils.io import input_bounded_num
 
 def create_process_execution_gantt(process_dump: List[ProcessLog], layers: List[str] = []):
-    layer_gantts = [GanttView(name="[{}]".format(i + 1), show_timestamps=i + 1 == len(layers)) for i in range(len(layers))]
+    layer_gantts = [GanttView(name="[{}]".format(num), show_timestamps=num == len(layers)) for num, _ in enumerate(layers, start=1)]
     merged_gantt = GanttView(name="[A]" if len(layers) > 0 else None)
     for log in process_dump:
         name = "P" + str(log.name) if type(log.name) == int else log.name
@@ -66,7 +66,7 @@ def configure_mlq(num_layers: int):
     layer_names = []
     layer_choices = MLQ.layer_choices()
     
-    print(View.numbered_list(map(lambda s : s.name, layer_choices)))
+    print(View.numbered_list(s.name for s in layer_choices))
     for layer_num in range(num_layers):
         scheduler_choice = input_bounded_num("Layer #{}: ".format(layer_num + 1), max=len(layer_choices))
 
@@ -95,7 +95,7 @@ def configure_mlfq(num_layers: int):
         layer_names.append(RoundRobin.name + " | q=" + str(layer_time_quantum))
 
     print()
-    print(View.numbered_list(map(lambda s : s.name, allowed_last_layers)), end="\n\n")
+    print(View.numbered_list(s.name for s in allowed_last_layers), end="\n\n")
     selected_end_layer = input_bounded_num("Select End Layer: ", max=len(allowed_last_layers))
     
     end_layer = allowed_last_layers[selected_end_layer - 1]
@@ -109,7 +109,7 @@ def main():
     
     # Select a scheduler
     scheduler_choices: List[Scheduler] = [FCFS, SJF, PriorityNP, Priority, RoundRobin, SRTF, MLQ, MLFQ] 
-    print(View.numbered_list(map(lambda s : s.name, scheduler_choices)), end="\n\n")
+    print(View.numbered_list(s.name for s in scheduler_choices), end="\n\n")
     scheduler_choice = input_bounded_num("Select a scheduler: ", max=len(scheduler_choices))
 
     chosen_scheduler: Scheduler = scheduler_choices[scheduler_choice - 1]
@@ -160,7 +160,7 @@ def main():
     processor = Processor(clock=clock)
     scheduler = scheduler_factory(process_list, processor)
 
-    while any(map(lambda p : not p.is_marked_completed, process_list)):
+    while any(not p.is_marked_completed for p in process_list):
         clock.tick()
 
         if processor.is_occupied:

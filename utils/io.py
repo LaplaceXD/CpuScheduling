@@ -26,7 +26,7 @@ def input_choice(prompt: object = "", choices: List[str] = [], default: str = ""
     result: Optional[str] = None
     prompt_suffix = "(" + "/".join(choices) + (", default: " + default if default else "") + ")"
     prompt_text = prompt + " " + prompt_suffix + " "
-    choices_lowered = list(map(lambda s : s.lower(), choices))
+    choices_lowered = [s.lower() for s in choices]
 
     while result is None:
         try:

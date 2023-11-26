@@ -24,7 +24,7 @@ def main():
 
     # Selection of memory algorithms to use for simulation
     memory_choices: List[Memory] = [FIFO, LRU, LFU, Optimal]
-    print(View.numbered_list(map(lambda m : m.name, memory_choices)), end="\n\n")
+    print(View.numbered_list(m.name for m in memory_choices), end="\n\n")
     
     is_selecting = True
     memories: List[tuple[Memory, List[MemorySnapshot]]] = [] 
@@ -90,12 +90,12 @@ def main():
 
         print("## State Tracking")
         print("Legend: [<Time>] <State: {}>".format(memory.state_annotation))
-        print(View.numbered_list([s.snapshot.state for s in paging_timeline], is_reversed=True))
+        print(View.numbered_list((s.snapshot.state for s in paging_timeline), is_reversed=True))
         print()
         
         print("## Page Replacement Log")
         print("Legend: [<Time>] <Log>")
-        print(View.numbered_list([s.log for s in paging_timeline], is_reversed=True))
+        print(View.numbered_list((s.log for s in paging_timeline), is_reversed=True))
 
         print("\n--------------------------------------------")
 
@@ -105,9 +105,9 @@ def main():
     print("Legend: Ranked by page hits")
     print("Page References:", page_ref)
 
-    sorted_metrics = sorted(memory_metrics, key=lambda metric : metric.hits, reverse=True)
+    memory_metrics.sort(key=lambda metric : metric.hits, reverse=True)
     summary_table = TableView(min_cell_width=8, header=["Rank#", "Page Replacement Algorithm", "Hits", "Faults", "Hit%", "Fault%"])
-    for rank, metric in enumerate(sorted_metrics, start=1):
+    for rank, metric in enumerate(memory_metrics, start=1):
         summary_table.add_item(rank, metric.memory_name, metric.hits, metric.faults, metric.hit_percent, metric.fault_percent)
     summary_table.render()
 

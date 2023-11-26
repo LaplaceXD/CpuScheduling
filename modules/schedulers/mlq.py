@@ -13,16 +13,16 @@ class MLQ(Scheduler):
         super().__init__(processes, processor)
         self.__layers: List[Scheduler] = []
 
-        for ql in range(len(layers)):
-            ql_processes = list(filter(lambda p : p.queue_level == ql, processes))
-            layer = layers[ql](ql_processes, processor)
+        for ql, layer in enumerate(layers):
+            ql_processes = [p for p in processes if p.queue_level == ql]
+            layer_instance = layer(ql_processes, processor)
             
-            if isinstance(layer, RoundRobin):
+            if isinstance(layer_instance, RoundRobin):
                 # Ensures that when two or more round robins exists, only the running round robin is ticking its time window
                 # The l = layer is a workaround to keep the layer block scoped, as layer is local scoped 
-                self._processor.on_clear(lambda _, l = layer : self._processor.off_tick(l.decrement_time_window))
+                self._processor.on_clear(lambda _, l = layer_instance : self._processor.off_tick(l.decrement_time_window))
 
-            self.__layers.append(layer)
+            self.__layers.append(layer_instance)
 
     @staticmethod
     def layer_choices() -> List[Scheduler]:
@@ -35,7 +35,7 @@ class MLQ(Scheduler):
         return partialized_instance
 
     def is_queued(self, process: Process):
-        return any(map(lambda layer : process in layer._ready_queue, self.__layers))
+        return any(process in layer._ready_queue for layer in self.__layers)
 
     def run(self, timestamp: int, is_allowed_to_preempt: bool = True) -> List[Process]:
         current_layer = self.__layers[self._processor.current_process.queue_level] if self._processor.is_occupied else None
@@ -43,7 +43,7 @@ class MLQ(Scheduler):
 
         # Preempt on the arrival of a higher queue level process
         if len(arrived_processes) > 0 and self._processor.is_occupied:
-            process_with_lowest_queue_level = min(list(map(lambda p : p.queue_level, arrived_processes)))
+            process_with_lowest_queue_level = min(p.queue_level for p in arrived_processes)
             higher_queue_level_process_arrived = self._processor.current_process.queue_level > process_with_lowest_queue_level 
         
             if is_allowed_to_preempt and higher_queue_level_process_arrived and self._processor.is_occupied and not self._processor.is_finished:
