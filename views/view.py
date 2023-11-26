@@ -39,7 +39,7 @@ class View(ABC):
     def _create_separator_line(self, joint: str = "+", line: str = "-"):
         return joint + joint.join([line * w for w in self._cell_widths]) + joint
 
-    def numbered_list(items: Iterable[Any], start_at: int = 1, is_reversed: bool = False):
+    def numbered_list(items_iter: Iterable[Any], start_at: int = 1, is_reversed: bool = False):
         """ 
             Turns a set of items into a string of numbered list. The numbering is sequential,
             but the starting number can be changed by setting a starting number on the second
@@ -52,7 +52,8 @@ class View(ABC):
             [3] Numbered List Item
         """
         # + 2 is to account for the char width of the brackets in the bullet
-        number_bullet_width = len(str(len(items) + 1)) + 2 
+        items = list(items_iter)
+        number_bullet_width = len(str(len(list(items)) + 1)) + 2 
         numbered_list = []
 
         for i, item in enumerate(items):
