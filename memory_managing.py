@@ -10,18 +10,24 @@ from utils.io import input_bounded_num, input_choice
 def main():
     print("===== Memory Management Simulator =====")
 
-    # Create page reference
-    page_ref = input("Page Reference (separated by spaces): ")
-    pages = re.findall(r'[A-Za-z0-9]+', page_ref)
+    # Create page references
+    input_is_invalid = True
+    pages = []
+    while input_is_invalid:
+        page_ref = input("Page Reference (separated by spaces): ")
+        pages = re.findall(r'[A-Za-z0-9]+', page_ref)
+        if len(pages) > 0:
+            input_is_invalid = False
+        else:
+            print("Page reference needs to have at least one page.")
     pages = [int(page) if page.isdigit() else page for page in pages]
 
+    # Selection of memory algorithms to use for simulation
     memory_choices: List[Memory] = [FIFO, LRU, LFU, Optimal]
     print(View.numbered_list(map(lambda m : m.name, memory_choices)), end="\n\n")
     
     is_selecting = True
     memories: List[tuple[Memory, List[MemorySnapshot]]] = [] 
-    
-    # Selection of memory algorithms to use for simulation
     while is_selecting:
         memory_choice = input_bounded_num("Selected Memory: ", max=len(memory_choices))
         frame_size = input_bounded_num("Frame Size: ")
