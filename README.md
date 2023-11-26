@@ -1,8 +1,12 @@
-# CPU Scheduling Algorithms - CS 3104 Project
+# Operating System Concepts - CS 3104 Project
 
-A program used to simulate how schedulers work on an operating system running on a single-core processor. Users can give a set of processes, and select the scheduling algorithm to be used by the processor to simulate how the OS runs. This was created in partial fulfillment of the requirements of one of my course requirements, **CS 3102 - Operating Systems**.
+A program used to simulate various operating system concepts, such as:
+1. `CPU Process Scheduling`, wherein a process scheduling algorithm is simulated on a single-core processor. The scheduler, and the processes are manually configured by the user to understand, how operating systems ensure fairness, responsitivity, and other metrics within the system.
+2. `Memory Page Replacement Algorithms`, wherein a memory page replacement algorithm is simulated based on a set of incoming page references. The algorithm, and page references are manually configured by the user to understand how pages are swapped in and out to ensure higher page hits.
 
-## Scheduling Algorithms
+These simulations were created in partial fulfillment of the requirements of one of my course requirements, **CS 3104 - Operating Systems**.
+
+## Process Scheduling Algorithms
 
 **Scheduling algorithms** are used to manage the execution of processes in an operating system ensuring fairness, quick response times, maximized average turnaround time, minimized average waiting time, and other criteria. These algorithms can be preemptive or non-preemptive. 
 
@@ -22,7 +26,21 @@ Preemptive scheduling algorithms allow the interruption of currently executing p
 
 
 ### Limitation
-While the scheduling algorithm here works, it doesn't take into account I/O time, and memory allocation of processes.
+While the scheduling algorithm here works, it doesn't take into account I/O time of processes.
+
+## Page Replacement Algorithms (Memory Management)
+
+**Scheduling algorithms** are used to manage the execution of processes in an operating system ensuring fairness, quick response times, maximized average turnaround time, minimized average waiting time, and other criteria. These algorithms can be preemptive or non-preemptive. 
+
+Preemptive scheduling algorithms allow the interruption of currently executing processes to start or resume another process, while non-preemptive scheduling algorithms do not permit such interruptions, requiring the currently running process to complete its execution before the next one starts.
+
+### List of Scheduling Algorithms Implemented:
+| Page Replacement Algorithm           | Replacement Criteria                         |
+| ------------------------------------ | -------------------------------------------- |
+| First-In, First-Out (FIFO)           | Arrival Time                                 |
+| Least Recently Used (LRU)            | Recency of Usage                             |
+| Least Frequently Used (LFU)          | Frequency of Usage during its time in Memory |
+| Optimal                              | Interval of Next Usage of the Page           |
 
 ## Setup / Usage
 
