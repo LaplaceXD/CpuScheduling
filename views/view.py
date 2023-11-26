@@ -1,4 +1,3 @@
-from itertools import count
 from typing import Any, Iterable, List
 from abc import ABC, abstractmethod
 
@@ -20,7 +19,7 @@ class View(ABC):
         if len(self._cell_widths) == 0:
             self._cell_widths = [self._min_cell_width for _ in range(len(content))]
 
-        for i, c, w in zip(count(), content, self._cell_widths):
+        for i, c, w in zip(range(len(content)), content, self._cell_widths):
             self._cell_widths[i] = max(len(str(c)), w)
     
     def _format_row(self, items: List[Any], sep: str = "|"):
