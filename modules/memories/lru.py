@@ -13,20 +13,18 @@ class LRU(Memory[T]):
         self._state: List[T] = []
 
     def load(self, page: T):
-        if not self.is_full:
-            self._memory[self._size] = page
-            self._size += 1
-            
+        if page in self._memory: 
+            self._state.remove(page)
             self._state.append(page)
-            return None, True
-        elif page not in self._memory:
+            return None, False
+        
+        least_recently_used_page = None
+        frame = self.size
+        if self.is_full:
             least_recently_used_page = self._state.pop(0)
-            self._memory[self._memory.index(least_recently_used_page)] = page
-            
-            self._state.append(page)
-            return least_recently_used_page, True
+            frame = self._memory.index(least_recently_used_page)
 
-        # Refresh the recency of usage of the item in memory
-        self._state.remove(page)
+        self._memory[frame] = page
         self._state.append(page)
-        return None, False
+
+        return least_recently_used_page, True

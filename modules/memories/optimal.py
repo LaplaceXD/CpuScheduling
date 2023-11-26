@@ -23,14 +23,14 @@ class Optimal(Memory[T]):
         if page in self._state:
             self._state.remove(page)
 
-        if not self.is_full:
-            self._memory[self._size] = page 
-            self._size += 1
-            return None, True
-        elif page not in self._memory:
-            print(self.state)
+        if page in self._memory: 
+            return None, False
+        
+        longest_page_usage_interval = None
+        frame = self.size
+        if self.is_full:
             longest_page_usage_interval = self.state.pop(0)
-            self._memory[self._memory.index(longest_page_usage_interval)] = page
-            return longest_page_usage_interval, True
+            frame = self._memory.index(longest_page_usage_interval)
 
-        return None, False
+        self._memory[frame] = page
+        return longest_page_usage_interval, True

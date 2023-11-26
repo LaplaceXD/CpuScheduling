@@ -13,11 +13,10 @@ class Memory(ABC, Generic[T]):
         self._memory: List[Optional[T]] = [None for _ in range(frame_size)]
         self._state: Any = None
         self._capacity: int = frame_size
-        self._size: int = 0
         self._iter_ptr: int = 0
 
     def __eq__(self, other: 'Memory'):
-        return self.name == other.name and len(self) == len(other) and self._capacity == other.capacity and all(a == b for a, b in zip(self._memory, other))
+        return self.name == other.name and self.size == other.size and self._capacity == other.capacity and all(a == b for a, b in zip(self._memory, other))
     
     def __getitem__(self, idx: int):
         return self._memory[idx]
@@ -36,7 +35,7 @@ class Memory(ABC, Generic[T]):
 
     def __len__(self):
         """ The current number of frames that is in memory. """
-        return self._size
+        return self._capacity - self._memory.count(None)
     
     def __str__(self):
         return str(self._memory)
@@ -53,15 +52,15 @@ class Memory(ABC, Generic[T]):
     @property
     def size(self):
         """ The current number of frames that is in memory. """
-        return self._size
+        return len(self)
     
     @property
     def is_full(self):
-        return self._size == self._capacity
+        return self.size == self._capacity
     
     @property
     def is_empty(self):
-        return self._size == 0
+        return self.size == 0
 
     @property
     def state(self):

@@ -13,17 +13,16 @@ class FIFO(Memory[T]):
         self._state: List[T] = []
 
     def load(self, page: T):
-        if not self.is_full:
-            self._memory[self._size] = page
-            self._size += 1
-            
-            self._state.append(page)
-            return None, True
-        elif page not in self._memory:
-            oldest_page = self._state.pop(0)
-            self._memory[self._memory.index(oldest_page)] = page
-            
-            self._state.append(page)
-            return oldest_page, True
+        if page in self._memory: 
+            return None, False
         
-        return None, False
+        oldest_page = None
+        frame = self.size
+        if self.is_full:
+            oldest_page = self._state.pop(0)
+            frame = self._memory.index(oldest_page)
+
+        self._memory[frame] = page
+        self._state.append(page)
+
+        return oldest_page, True

@@ -22,24 +22,19 @@ class LFU(Memory[T]):
         return list(sorted_page_freqs)
     
     def load(self, page: T):
-        if not self.is_full:
-            self._memory[self._size] = page
-            self._state[self._size] = 1
-            self.__time_state.append(page)
-            
-            self._size += 1
-            return None, True
-        elif page not in self._memory:
-            least_frequently_used_page, _ = self.state.pop(0) 
-            idx_of_least_freq_used = self._memory.index(least_frequently_used_page)
-            
-            self._memory[idx_of_least_freq_used] = page
-            self._state[idx_of_least_freq_used] = 1
-            
+        if page in self._memory: 
+            self._state[self._memory.index(page)] += 1
+            return None, False
+        
+        least_frequently_used_page = None
+        frame = self.size
+        if self.is_full:
+            least_frequently_used_page, _ = self.state.pop(0)
+            frame = self._memory.index(least_frequently_used_page)
             self.__time_state.remove(least_frequently_used_page)
-            self.__time_state.append(page)
-            return least_frequently_used_page, True
 
-        # Increase count of page for each access
-        self._state[self._memory.index(page)] += 1
-        return None, False
+        self._memory[frame] = page
+        self._state[frame] = 1
+        self.__time_state.append(page)
+
+        return least_frequently_used_page, True
