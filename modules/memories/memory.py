@@ -17,7 +17,7 @@ class Memory(ABC, Generic[T]):
         self._iter_ptr: int = 0
 
     def __eq__(self, other: 'Memory'):
-        return self._size == other._size and self._capacity == other._capacity and all(a == b for a, b in zip(self._memory, other._memory))
+        return self.name == other.name and len(self) == len(other) and self._capacity == other.capacity and all(a == b for a, b in zip(self._memory, other))
     
     def __getitem__(self, idx: int):
         return self._memory[idx]

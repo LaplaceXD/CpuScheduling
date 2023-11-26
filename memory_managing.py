@@ -27,8 +27,9 @@ def main():
         frame_size = input_bounded_num("Frame Size: ")
         
         chosen_memory = memory_choices[memory_choice - 1]
-        if chosen_memory not in memories:
-            memories.append((chosen_memory(frame_size) if chosen_memory != Optimal else chosen_memory(frame_size, pages), []))
+        memory_instance = chosen_memory(frame_size) if chosen_memory != Optimal else chosen_memory(frame_size, pages)
+        if all(m != memory_instance for m, _ in memories):
+            memories.append((memory_instance, []))
         else:
             print("Chosen memory configuration is a duplicate, it won't be added further.\n")
 
