@@ -11,12 +11,21 @@ class Optimal(Memory[T]):
 
     def __init__(self, frame_size: int, pages: List[T]):
         super().__init__(frame_size)
-        self._state: List[T] = deepcopy(pages)
+        self._state: List[T] = deepcopy(pages)      # Page references to predict the future
+        self.__time_state: List[T] = []             # Time in Memory State 
 
     @property
     def state(self):
-        none_removed = filter(lambda page : page is not None, self._memory)
-        return sorted(none_removed, key=lambda page : self._state.index(page) if page in self._state else len(self._state), reverse=True)
+        none_removed = [page for page in self._memory if page is not None]
+        
+        pages_with_next_intervals = [page for page in none_removed if page in self._state]
+        no_next_interval_pages = [page for page in none_removed if page not in self._state]
+
+        pages_with_next_intervals.sort(key=lambda page : self._state.index(page), reverse=True) # Sort by their next interval
+        no_next_interval_pages.sort(key=lambda page : self.__time_state.index(page)) # Sort by oldest
+
+        # Pages with no intervals have lower purpose to be in memory, since they no longer get hit
+        return no_next_interval_pages + pages_with_next_intervals
 
     def load(self, page: T):
         # We only need to keep track of future pages
@@ -31,6 +40,9 @@ class Optimal(Memory[T]):
         if self.is_full:
             longest_page_usage_interval = self.state.pop(0)
             frame = self._memory.index(longest_page_usage_interval)
+            self.__time_state.remove(longest_page_usage_interval)
 
         self._memory[frame] = page
+        self.__time_state.append(page)
+        
         return longest_page_usage_interval, True
