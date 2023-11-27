@@ -77,7 +77,7 @@ def main():
         table = TableView(header=["Time"] + [s.snapped_on for s in paging_timeline], footer=["Status"] + [s.status for s in paging_timeline])
         for frame in range(memory.capacity):
             row_header = "Frame {}".format(memory.frame_label_of(memory[frame]))
-            table.add_item(row_header, *(s.snapshot[frame] for s in paging_timeline))
+            table.add_item(row_header, *(s.snapshot[frame] if s.snapshot[frame] is not None else "--" for s in paging_timeline))
         table.render()
         print()
         
