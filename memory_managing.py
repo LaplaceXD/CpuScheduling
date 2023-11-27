@@ -7,9 +7,6 @@ from modules import MemorySnapshot, MemoryMetrics
 from views import View, TableView
 from utils.io import input_bounded_num, input_choice
 
-def format_time_log(time: int, log: str, time_pad: int = 3):
-    return "{:>{}} {}".format("[{}]".format(time), time_pad + 2, log)
-
 def main():
     print("===== Memory Management Simulator =====")
 
@@ -91,19 +88,14 @@ def main():
         print("{:15}: {:<30}".format("Fault Ratio", metrics.fault_percent), end="\n")
         print()
 
-        print("## State Tracking")
-        print("Legend: [<Time>] <State: {}>".format(memory.state_annotation))
-        time_bullet_pad = len(str(len(paging_timeline)))
-        state_logs = [format_time_log(s.snapped_on, str(s.snapshot.state), time_bullet_pad) for s in paging_timeline]
-        state_logs.reverse()
-        print(*state_logs, sep="\n")
-        print()
- 
-        print("## Page Replacement Log")
-        print("Legend: [<Time>] <Log>")
-        replacement_logs = [format_time_log(s.snapped_on, s.log, time_bullet_pad) for s in paging_timeline]
-        replacement_logs.reverse()
-        print(*replacement_logs, sep="\n")
+        print("## Page State and Replacement Logs")
+        print("State Format: {}".format(memory.state_annotation))
+        print("Legend: [<Time>] <State (After Replacement)> <Log>")
+        time_pad = len(str(len(paging_timeline)))
+        mem_state_pad = max(len(str(s.snapshot.state)) for s in paging_timeline)
+        logs = ["{:>{}} {:>{}} {}".format("[{}]".format(s.snapped_on), time_pad + 2, str(s.snapshot.state), mem_state_pad, s.log) for s in paging_timeline]
+        logs.reverse()
+        print(*logs, sep="\n")
 
         print("\n--------------------------------------------")
 
