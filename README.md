@@ -30,9 +30,9 @@ While the scheduling algorithm here works, it doesn't take into account I/O time
 
 ## Page Replacement Algorithms (Memory Management)
 
-**Scheduling algorithms** are used to manage the execution of processes in an operating system ensuring fairness, quick response times, maximized average turnaround time, minimized average waiting time, and other criteria. These algorithms can be preemptive or non-preemptive. 
+**Page replacement algorithms** are essential components of operating systems that manage the swapping of pages in and out of memory. Their primary goal is to optimize memory utilization, minimize page faults, and enhance overall system performance. These algorithms are categorized as either global or local.
 
-Preemptive scheduling algorithms allow the interruption of currently executing processes to start or resume another process, while non-preemptive scheduling algorithms do not permit such interruptions, requiring the currently running process to complete its execution before the next one starts.
+In a global page replacement algorithm, the operating system considers all pages across the entire system when deciding which page to replace. On the other hand, local page replacement algorithms base their decisions on the pages within the specific process that generated the page fault.
 
 ### List of Scheduling Algorithms Implemented:
 | Page Replacement Algorithm           | Replacement Criteria                         |
