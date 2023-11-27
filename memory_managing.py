@@ -7,6 +7,9 @@ from modules import MemorySnapshot, MemoryMetrics
 from views import View, TableView
 from utils.io import input_bounded_num, input_choice
 
+def format_time_log(time: int, log: str, time_pad: int = 3):
+    return "{:>{}} {}".format("[{}]".format(time), time_pad + 2, log)
+
 def main():
     print("===== Memory Management Simulator =====")
 
@@ -90,12 +93,17 @@ def main():
 
         print("## State Tracking")
         print("Legend: [<Time>] <State: {}>".format(memory.state_annotation))
-        print(View.numbered_list((s.snapshot.state for s in paging_timeline), is_reversed=True))
+        time_bullet_pad = len(str(len(paging_timeline)))
+        state_logs = [format_time_log(s.snapped_on, str(s.snapshot.state), time_bullet_pad) for s in paging_timeline]
+        state_logs.reverse()
+        print(*state_logs, sep="\n")
         print()
-        
+ 
         print("## Page Replacement Log")
         print("Legend: [<Time>] <Log>")
-        print(View.numbered_list((s.log for s in paging_timeline), is_reversed=True))
+        replacement_logs = [format_time_log(s.snapped_on, s.log, time_bullet_pad) for s in paging_timeline]
+        replacement_logs.reverse()
+        print(*replacement_logs, sep="\n")
 
         print("\n--------------------------------------------")
 
