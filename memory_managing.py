@@ -90,10 +90,10 @@ def main():
 
         print("## Page State and Replacement Logs")
         print("State Format: {}".format(memory.state_annotation))
-        print("Legend: [<Time>] <State (After Replacement)> <Log>")
+        print("Legend: {}".format(MemorySnapshot.log_legend))
         time_pad = len(str(len(paging_timeline)))
         mem_state_pad = max(len(str(s.snapshot.state)) for s in paging_timeline)
-        logs = ["{:>{}} {:>{}} {}".format("[{}]".format(s.snapped_on), time_pad + 2, str(s.snapshot.state), mem_state_pad, s.log) for s in paging_timeline]
+        logs = [s.log(state_log_pad=mem_state_pad, time_log_pad=time_pad) for s in paging_timeline]
         logs.reverse()
         print(*logs, sep="\n")
 
