@@ -54,7 +54,7 @@ If you only want to see the algorithms and their implementation without all the 
 
 ## Contributing
 
-Unfortunately, we are not accepting pull requests, since this is a one-time project. However, feel free to fork this project, and improve on it!
+Unfortunately, I am not accepting pull requests, since this is a one-time project. However, feel free to fork this project, and improve on it!
 
 ## License
 
