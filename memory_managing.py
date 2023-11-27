@@ -91,7 +91,7 @@ def main():
         print("## Page State and Replacement Logs")
         print("State Format: {}".format(memory.state_annotation))
         print("Legend: {}".format(MemorySnapshot.log_legend))
-        time_pad = len(str(len(paging_timeline)))
+        time_pad = max(len(str(s.snapped_on)) for s in paging_timeline)
         mem_state_pad = max(len(str(s.snapshot.state)) for s in paging_timeline)
         logs = [s.log(state_log_pad=mem_state_pad, time_log_pad=time_pad) for s in paging_timeline]
         logs.reverse()
