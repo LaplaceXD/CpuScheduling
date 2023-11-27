@@ -42,6 +42,9 @@ Preemptive scheduling algorithms allow the interruption of currently executing p
 | Least Frequently Used (LFU)          | Frequency of Usage during its time in Memory |
 | Optimal                              | Interval of Next Usage of the Page           |
 
+### Proof of Concept
+If you only want to see the algorithms and their implementation without all the unnecessary presentation layers found in this repository. You can check out this [proof of concept](https://pastebin.com/Ser69ScW) paste bin that I created.
+
 ## Setup / Usage
 
 **Prerequisites:** Make sure you have [`Python`](https://www.python.org/downloads/) installed.
