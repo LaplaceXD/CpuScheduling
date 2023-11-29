@@ -1,8 +1,8 @@
 # Operating System Concepts - CS 3104 Project
 
 A program used to simulate various operating system concepts, such as:
-1. `CPU Process Scheduling`, wherein a process scheduling algorithm is simulated on a single-core processor. The scheduler, and the processes are manually configured by the user to understand, how operating systems ensure fairness, responsitivity, and other metrics within the system.
-2. `Memory Page Replacement Algorithms`, wherein a memory page replacement algorithm is simulated based on a set of incoming page references. The algorithm, and page references are manually configured by the user to understand how pages are swapped in and out to ensure higher page hits.
+1. `CPU Process Scheduling`, wherein a process scheduling algorithm is simulated on a single-core processor. The scheduler and the processes are manually configured by the user to understand, how operating systems ensure fairness, responsitivity, and other metrics within the system.
+2. `Memory Page Replacement Algorithms`, wherein a memory page replacement algorithm is simulated based on a set of incoming page references. The algorithm and page references are manually configured by the user to understand how pages are swapped in and out to ensure higher page hits.
 
 These simulations were created in partial fulfillment of the requirements of one of my course requirements, **CS 3104 - Operating Systems**.
 
@@ -43,7 +43,7 @@ In a global page replacement algorithm, the operating system considers all pages
 | Optimal                              | Interval of Next Usage of the Page           |
 
 ### Proof of Concept
-If you only want to see the algorithms and their implementation without all the unnecessary presentation layers found in this repository. You can check out this [proof of concept](https://pastebin.com/Ser69ScW) paste bin that I created.
+If you only want to see the algorithms and their implementation without all the unnecessary presentation layers found in this repository. You can check out this [proof of concept](https://pastebin.com/trLMDbqa) paste bin that I created.
 
 ## Setup / Usage
 
