@@ -1,15 +1,15 @@
 import os
-from typing import List
+from typing import List, Any
 
 from models import Process, ProcessLog
 from modules import Processor, Clock
-from modules.schedulers import Scheduler, FCFS, SJF, PriorityNP, Priority, RoundRobin, SRTF, MLQ, MLFQ
+from modules.schedulers import FCFS, SJF, PriorityNP, Priority, RoundRobin, SRTF, MLQ, MLFQ
 from views import View, TableView, GanttView
 from utils.io import input_bounded_num
 
 def create_process_execution_gantt(process_dump: List[ProcessLog], layers: List[str] = []):
     layer_gantts = [GanttView(name="[{}]".format(num), show_timestamps=num == len(layers)) for num, _ in enumerate(layers, start=1)]
-    merged_gantt = GanttView(name="[A]" if len(layers) > 0 else None)
+    merged_gantt = GanttView(name="[A]" if len(layers) > 0 else "")
     for log in process_dump:
         name = "P" + str(log.name) if type(log.name) == int else log.name
         time = log.end
@@ -25,8 +25,8 @@ def create_os_metrics(processes: List[Process], total_run_time: int, total_idle_
     metrics = ""
     
     metrics += "CPU Utilization: {:.2f}%\n".format((float(total_run_time - total_idle_time) / float(total_run_time)) * 100)
-    metrics += "Average TAT: {:.2f}\n".format(sum(p.turnaround for p in processes) / len(processes))
-    metrics += "Average WT: {:.2f}".format(sum(p.waiting for p in processes) / len(processes))
+    metrics += "Average TAT: {:.2f}\n".format(sum(p.turnaround for p in processes if p.turnaround is not None) / len(processes))
+    metrics += "Average WT: {:.2f}".format(sum(p.waiting for p in processes if p.waiting is not None) / len(processes))
     
     return metrics
 
@@ -74,7 +74,7 @@ def configure_mlq(num_layers: int):
         if layer_scheduler == RoundRobin:
             time_quantum = input_bounded_num("Time quantum: ") 
             layer_names.append(layer_scheduler.name + " | q=" + str(time_quantum))
-            layers.append(layer_scheduler.factory(time_quantum, False))
+            layers.append(RoundRobin.factory(time_quantum, False))
         else:
             layer_names.append(layer_scheduler.name)
             layers.append(layer_scheduler.factory())
@@ -108,23 +108,23 @@ def main():
     print("===== CPU Scheduling Simulator =====")
     
     # Select a scheduler
-    scheduler_choices: List[Scheduler] = [FCFS, SJF, PriorityNP, Priority, RoundRobin, SRTF, MLQ, MLFQ] 
+    scheduler_choices = [FCFS, SJF, PriorityNP, Priority, RoundRobin, SRTF, MLQ, MLFQ] 
     print(View.numbered_list(s.name for s in scheduler_choices), end="\n\n")
     scheduler_choice = input_bounded_num("Select a scheduler: ", max=len(scheduler_choices))
 
-    chosen_scheduler: Scheduler = scheduler_choices[scheduler_choice - 1]
+    chosen_scheduler = scheduler_choices[scheduler_choice - 1]
     has_priority_field: bool = chosen_scheduler.has_priority_field
     has_queue_level_field: bool = chosen_scheduler.has_queue_level_field
 
     # Configure the chosen scheduler
     time_quantum: int = 0
     layer_names: List[str] = []
-    scheduler_factory = None
+    scheduler_factory: Any = None
 
     print("\n=====", chosen_scheduler.name, "Configuration =====")
     if chosen_scheduler == RoundRobin:
         time_quantum = input_bounded_num("Time quantum: ") 
-        scheduler_factory = chosen_scheduler.factory(time_quantum, True)
+        scheduler_factory = RoundRobin.factory(time_quantum, True)
     elif chosen_scheduler.is_multilevel:
         num_layers = input_bounded_num("Number of Layers: ")
 

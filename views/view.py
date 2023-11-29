@@ -36,7 +36,8 @@ class View(ABC):
 
     def _create_separator_line(self, joint: str = "+", line: str = "-"):
         return joint + joint.join(line * w for w in self._cell_widths) + joint
-
+    
+    @staticmethod
     def numbered_list(items_iter: Iterable[Any], start_at: int = 1, is_reversed: bool = False):
         """ 
             Turns a set of items into a string of numbered list. The numbering is sequential,

@@ -23,7 +23,7 @@ def main():
     pages = [int(page) if page.isdigit() else page for page in pages]
 
     # Selection of memory algorithms to use for simulation
-    memory_choices: List[Memory] = [FIFO, LRU, LFU, Optimal]
+    memory_choices = [FIFO, LRU, LFU, Optimal]
     print(View.numbered_list(m.name for m in memory_choices), end="\n\n")
     
     is_selecting = True
@@ -74,7 +74,7 @@ def main():
 
         print("## Memory State Visualization")
         print("Legend: F -> Page Fault | H -> Page Hit")
-        table = TableView(header=["Time"] + [s.snapped_on for s in paging_timeline], footer=["Status"] + [s.status for s in paging_timeline])
+        table = TableView(header=["Time"] + [str(s.snapped_on) for s in paging_timeline], footer=["Status"] + [s.status for s in paging_timeline])
         for frame in range(memory.capacity):
             row_header = "Frame {}".format(memory.frame_label_of(memory[frame]))
             table.add_item(row_header, *(s.snapshot[frame] if s.snapshot[frame] is not None else "--" for s in paging_timeline))
@@ -103,7 +103,7 @@ def main():
     print()
     print("===== Summary Statistics =====")
     print("Legend: Ranked by page hits")
-    print("Page References:", page_ref)
+    print("Page References:", " ".join(str(page) for page in pages))
 
     memory_metrics.sort(key=lambda metric : metric.hits, reverse=True)
     summary_table = TableView(min_cell_width=8, header=["Rank#", "Page Replacement Algorithm", "Hits", "Faults", "Hit%", "Fault%"])

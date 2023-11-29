@@ -12,7 +12,7 @@ class Memory(ABC, Generic[T]):
     def __init__(self, frame_size: int):
         self._memory: List[Optional[T]] = [None] * frame_size
         self._capacity: int = frame_size
-        self._iter_ptr: int = 0
+        self.__iter_ptr: int = 0
 
     def __eq__(self, other: 'Memory'):
         return self.name == other.name and self.size == other.size and self._capacity == other.capacity and all(a == b for a, b in zip(self._memory, other))
@@ -21,13 +21,13 @@ class Memory(ABC, Generic[T]):
         return self._memory[idx]
     
     def __iter__(self):
-        self._iter_ptr = 0
+        self.__iter_ptr = 0
         return self
 
     def __next__(self):
-        if self._iter_ptr < self._capacity:
-            value = self._memory[self._iter_ptr]
-            self._iter_ptr += 1
+        if self.__iter_ptr < self._capacity:
+            value = self._memory[self.__iter_ptr]
+            self.__iter_ptr += 1
             return value
         
         raise StopIteration

@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-def input_bounded_num(prompt: object = "", min: int = 1, max: Optional[int] = None):
+def input_bounded_num(prompt: str = "", min: int = 1, max: Optional[int] = None):
     """ Get a number input from the user that satisfies a certain minimum and maximum. """
     result: Optional[int] = None
     
@@ -21,7 +21,7 @@ def input_bounded_num(prompt: object = "", min: int = 1, max: Optional[int] = No
    
     return result
 
-def input_choice(prompt: object = "", choices: List[str] = [], default: str = ""):
+def input_choice(prompt: str = "", choices: List[str] = [], default: str = ""):
     """ Make a user select between a set of values. """
     result: Optional[str] = None
     prompt_suffix = "(" + "/".join(choices) + (", default: " + default if default else "") + ")"

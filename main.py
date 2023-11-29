@@ -1,6 +1,6 @@
 import os
 
-from scheduling import main as scheduling_main
+from process_scheduling import main as scheduling_main
 from memory_managing import main as memory_managing_main
 from utils.io import input_bounded_num
 from views import View

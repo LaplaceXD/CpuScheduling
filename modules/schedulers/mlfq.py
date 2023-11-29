@@ -29,7 +29,7 @@ class MLFQ(Scheduler):
         self.__layers.append(last_layer(processes, processor)) 
 
     @staticmethod
-    def last_layer_choices() -> List[Scheduler]:
+    def last_layer_choices():
         return [FCFS, SJF, PriorityNP]
     
     @classmethod
@@ -40,7 +40,7 @@ class MLFQ(Scheduler):
 
     @property
     def round_robin_layers(self) -> List[RoundRobin]:
-        return self.__layers[:-1]
+        return self.__layers[:-1] # pyright: ignore[reportGeneralTypeIssues]
     
     @property
     def last_layer(self):

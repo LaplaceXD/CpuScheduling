@@ -35,7 +35,7 @@ class TableView(View):
     
     def add_item(self, *data: Any):
         self._adjust_cell_sizes_to_fit(*data)
-        self.__data.append(data)
+        self.__data.append(list(data))
         return self
     
     def render(self):

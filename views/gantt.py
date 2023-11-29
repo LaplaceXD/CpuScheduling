@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 from views import View
 
 class GanttView(View):

@@ -27,7 +27,7 @@ class Processor:
 
     def __record_cleared_process(self, cleared_process: Process):
         """ Records the cleared process to the logs. """
-        log = ProcessLog(cleared_process.pid, self.__last_log_end_time, self.__clock.time, tag=cleared_process.queue_level)
+        log = ProcessLog(str(cleared_process.pid), self.__last_log_end_time, self.__clock.time, tag=cleared_process.queue_level)
         self.__process_logs.append(log)
 
     def __record_idle_time(self, loaded_process: Process):
@@ -48,7 +48,7 @@ class Processor:
     
     @property
     def is_finished(self):
-        return self.is_occupied and self.__current_process.is_depleted
+        return self.__current_process is not None and self.__current_process.is_depleted
     
     @property
     def idle_time(self):
@@ -65,11 +65,10 @@ class Processor:
     
     def run(self, time_quantum = 1):
         """ Runs the processor by a given time quantum. """
-        if self.is_occupied:
-            for _ in range(time_quantum):
-                if not self.__current_process.is_depleted:
-                    self.__current_process.tick()
-                    self.__tick_signal.emit(self.__current_process)
+        for _ in range(time_quantum):
+            if self.__current_process is not None and not self.__current_process.is_depleted:
+                self.__current_process.tick()
+                self.__tick_signal.emit(self.__current_process)
     
     def on_tick(self, fn: Callable[[Process], None]):
         """ Adds a function to listen whenever the processor does a tick. """
@@ -96,7 +95,7 @@ class Processor:
         """ Removes a loaded process from the processor, and returns that removed process to the caller. """
         cleared_process = None
         
-        if self.is_occupied:
+        if self.__current_process is not None:
             cleared_process = self.__current_process
             self.__current_process = None
             self.__clear_signal.emit(cleared_process)
