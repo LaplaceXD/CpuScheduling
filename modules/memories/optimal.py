@@ -11,38 +11,37 @@ class Optimal(Memory[T]):
 
     def __init__(self, frame_size: int, pages: List[T]):
         super().__init__(frame_size)
-        self._state: List[T] = deepcopy(pages)      # Page references to predict the future
-        self.__time_state: List[T] = []             # Time in Memory State 
+        self.__pages: List[T] = deepcopy(pages)
+        self.__arrival_queue: List[T] = []
 
     @property
     def state(self):
-        none_removed = [page for page in self._memory if page is not None]
+        mem_items = [page for page in self._memory if page is not None]
+        sort_by_page_interval = lambda p : self.__pages.index(p) if p in self.__pages else len(self.__pages) 
+        sort_by_arrival = lambda p : self.__arrival_queue.index(p)
         
-        pages_with_next_intervals = [page for page in none_removed if page in self._state]
-        no_next_interval_pages = [page for page in none_removed if page not in self._state]
-
-        pages_with_next_intervals.sort(key=lambda page : self._state.index(page), reverse=True) # Sort by their next interval
-        no_next_interval_pages.sort(key=lambda page : self.__time_state.index(page)) # Sort by oldest
-
-        # Pages with no intervals have lower purpose to be in memory, since they no longer get hit
-        return no_next_interval_pages + pages_with_next_intervals
+        # -1 to sort by arrival in descending order
+        mem_items.sort(key=lambda page : (sort_by_page_interval(page), -1 * sort_by_arrival(page)), reverse=True)
+        return mem_items
 
     def load(self, page: T):
-        # We only need to keep track of future pages
-        if page in self._state:
-            self._state.remove(page)
-
-        if page in self._memory: 
-            return None, False
+        replaced_page, is_fault = None, False
         
-        longest_page_usage_interval = None
-        frame = self.size
-        if self.is_full:
-            longest_page_usage_interval = self.state.pop(0)
-            frame = self._memory.index(longest_page_usage_interval)
-            self.__time_state.remove(longest_page_usage_interval)
-
-        self._memory[frame] = page
-        self.__time_state.append(page)
+        # We only care about the next set of pages
+        if page in self.__pages:
+            self.__pages.remove(page)
         
-        return longest_page_usage_interval, True
+        if page not in self._memory:
+            # frame is defaulted to size, since we want to insert sequentially 
+            # into None filled spaces in memory until it is full
+            frame, is_fault = self.size, True
+
+            if self.is_full:
+                replaced_page = self.state.pop(0)
+                frame = self._memory.index(replaced_page)
+                self.__arrival_queue.remove(replaced_page)
+
+            self._memory[frame] = page
+            self.__arrival_queue.append(page)
+        
+        return replaced_page, is_fault

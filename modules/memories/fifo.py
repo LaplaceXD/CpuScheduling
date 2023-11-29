@@ -10,19 +10,25 @@ class FIFO(Memory[T]):
     
     def __init__(self, frame_size: int):
         super().__init__(frame_size)
-        self._state: List[T] = []
+        self.__arrival_queue: List[T] = []
+
+    @property
+    def state(self):
+        return self.__arrival_queue
 
     def load(self, page: T):
-        if page in self._memory: 
-            return None, False
+        replaced_page, is_fault = None, False
         
-        oldest_page = None
-        frame = self.size
-        if self.is_full:
-            oldest_page = self._state.pop(0)
-            frame = self._memory.index(oldest_page)
+        if page not in self._memory:
+            # frame is defaulted to size, since we want to insert sequentially 
+            # into None filled spaces in memory until it is full
+            frame, is_fault = self.size, True
 
-        self._memory[frame] = page
-        self._state.append(page)
+            if self.is_full:
+                replaced_page = self.state.pop(0)
+                frame = self._memory.index(replaced_page)
 
-        return oldest_page, True
+            self._memory[frame] = page
+            self.__arrival_queue.append(page)
+        
+        return replaced_page, is_fault

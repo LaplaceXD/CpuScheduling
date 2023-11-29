@@ -11,7 +11,6 @@ class Memory(ABC, Generic[T]):
     
     def __init__(self, frame_size: int):
         self._memory: List[Optional[T]] = [None] * frame_size
-        self._state: Any = None
         self._capacity: int = frame_size
         self._iter_ptr: int = 0
 
@@ -63,8 +62,8 @@ class Memory(ABC, Generic[T]):
         return self.size == 0
 
     @property
-    def state(self):
-        return self._state
+    def state(self) -> Any:
+        return None
     
     def frame_of(self, page: T) -> int:
         """ 
@@ -75,7 +74,7 @@ class Memory(ABC, Generic[T]):
             return self._memory.index(page)
         return -1
     
-    def frame_label_of(self, page: T, min_padding: int = 3) -> int:
+    def frame_label_of(self, page: T, min_padding: int = 3) -> str:
         """ 
             Retrieve the frame number of the given page. But it is
             in its padded form for presentation.

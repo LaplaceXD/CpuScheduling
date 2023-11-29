@@ -10,31 +10,34 @@ class LFU(Memory[T]):
 
     def __init__(self, frame_size: int):
         super().__init__(frame_size)
-        self._state: List[int] = [0] * self._capacity # Frequency State
-        self.__time_state: List[T] = []               # Time in Memory State
+        self.__frequencies: List[int] = [0] * self._capacity
+        self.__arrival_queue: List[T] = []
 
     @property
     def state(self):
-        page_freqs = zip((m for m in self._memory if m is not None), self._state)
+        page_freqs = zip((page for page in self._memory if page is not None), self.__frequencies)
         
         # Sort by count, then time in memory
-        sorted_page_freqs = sorted(page_freqs, key=lambda pf : (pf[1], self.__time_state.index(pf[0])))
+        sorted_page_freqs = sorted(page_freqs, key=lambda pf : (pf[1], self.__arrival_queue.index(pf[0])))
         return list(sorted_page_freqs)
     
     def load(self, page: T):
-        if page in self._memory: 
-            self._state[self._memory.index(page)] += 1
-            return None, False
+        replaced_page, is_fault = None, False
         
-        least_frequently_used_page = None
-        frame = self.size
-        if self.is_full:
-            least_frequently_used_page, _ = self.state.pop(0)
-            frame = self._memory.index(least_frequently_used_page)
-            self.__time_state.remove(least_frequently_used_page)
+        if page not in self._memory:
+            # frame is defaulted to size, since we want to insert sequentially 
+            # into None filled spaces in memory until it is full
+            frame, is_fault = self.size, True
 
-        self._memory[frame] = page
-        self._state[frame] = 1
-        self.__time_state.append(page)
+            if self.is_full:
+                replaced_page, _ = self.state.pop(0)
+                frame = self._memory.index(replaced_page)
+                self.__arrival_queue.remove(replaced_page)
 
-        return least_frequently_used_page, True
+            self._memory[frame] = page
+            self.__frequencies[frame] = 1
+            self.__arrival_queue.append(page)
+        else:
+            self.__frequencies[self._memory.index(page)] += 1
+        
+        return replaced_page, is_fault

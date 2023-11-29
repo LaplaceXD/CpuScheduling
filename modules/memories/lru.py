@@ -10,21 +10,27 @@ class LRU(Memory[T]):
 
     def __init__(self, frame_size: int):
         super().__init__(frame_size)
-        self._state: List[T] = []
+        self.__usage_queue: List[T] = []
+
+    @property
+    def state(self):
+        return self.__usage_queue
 
     def load(self, page: T):
-        if page in self._memory: 
-            self._state.remove(page)
-            self._state.append(page)
-            return None, False
+        replaced_page, is_fault = None, False
         
-        least_recently_used_page = None
-        frame = self.size
-        if self.is_full:
-            least_recently_used_page = self._state.pop(0)
-            frame = self._memory.index(least_recently_used_page)
+        if page not in self._memory:
+            # frame is defaulted to size, since we want to insert sequentially 
+            # into None filled spaces in memory until it is full
+            frame, is_fault = self.size, True
 
-        self._memory[frame] = page
-        self._state.append(page)
+            if self.is_full:
+                replaced_page = self.state.pop(0)
+                frame = self._memory.index(replaced_page)
 
-        return least_recently_used_page, True
+            self._memory[frame] = page
+        else:
+            self.__usage_queue.remove(page)
+
+        self.__usage_queue.append(page)
+        return replaced_page, is_fault
