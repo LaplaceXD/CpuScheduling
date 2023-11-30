@@ -1,7 +1,5 @@
 import os
 
-from process_scheduling import main as scheduling_main
-from memory_managing import main as memory_managing_main
 from utils.io import input_bounded_num
 from views import View
 
@@ -10,22 +8,21 @@ def main():
         "CPU Scheduling",
         "Memory Management"
     ]
-    
-    entries = [
-        scheduling_main,
-        memory_managing_main
-    ]
 
     print("===== Operating System Simulator =====")
     print(View.numbered_list(choices))
     print()
     print("What do you want to simulate?")
-    choice = input_bounded_num("Choice: ", max=len(choices))
-    
+    choice = input_bounded_num("Choice: ", max=len(choices)) - 1
+
+    entry_fn = None
+    if choices[choice] == choices[0]: from process_scheduling import main as entry_fn
+    if choices[choice] == choices[1]: from memory_managing import main as entry_fn
+
     is_running = True 
     while is_running:
-        os.system("cls")
-        entries[choice - 1]()
+        os.system("cls") 
+        entry_fn()
         
         status = input("\n\nContinue (type quit to exit)...")
         if status and status.lower() == "quit":
