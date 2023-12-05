@@ -34,7 +34,7 @@ While the scheduling algorithm here works, it doesn't take into account I/O time
 
 In a global page replacement algorithm, the operating system considers all pages across the entire system when deciding which page to replace. On the other hand, local page replacement algorithms base their decisions on the pages within the specific process that generated the page fault.
 
-### List of Scheduling Algorithms Implemented:
+### List of Page Replacement Algorithms Implemented:
 | Page Replacement Algorithm           | Replacement Criteria                         |
 | ------------------------------------ | -------------------------------------------- |
 | First-In, First-Out (FIFO)           | Arrival Time                                 |
@@ -44,6 +44,28 @@ In a global page replacement algorithm, the operating system considers all pages
 
 ### Proof of Concept
 If you only want to see the algorithms and their implementation without all the unnecessary presentation layers found in this repository. You can check out this [proof of concept](https://pastebin.com/trLMDbqa) paste bin that I created.
+
+# Disk Scheduling Algorithms
+
+**Disk scheduling algorithms** are crucial components of operating systems that manage the efficient positioning of disk read/write heads to optimize access times for disk I/O operations. These algorithms aim to minimize seek time, enhance overall system performance, and improve the utilization of the disk.
+
+These algorithms can be categorized based on their approach to scheduling disk I/O requests. Common disk scheduling algorithms include First Come First Serve (FCFS), Shortest Seek Time First (SSTF), SCAN, C-SCAN, LOOK, and C-LOOK.
+
+### List of Disk Scheduling Algorithms Implemented:
+| Disk Scheduling Algorithm           | Scheduling Criteria                        |
+| ------------------------------------ | ------------------------------------------ |
+| First Come First Serve (FCFS)        | Arrival Time of Disk I/O Requests          |
+| Shortest Seek Time First (SSTF)      | Minimum Seek Time to Reach the Requested Track |
+| SCAN                                 | Seek in One Direction Until Outer Track is Reached, Then Reverse Direction |
+| C-SCAN                               | Seek in One Direction Until Outer Track is Reached, Jump to the Inner Track, and Repeat |
+| LOOK                                 | Seek in One Direction Until No More Requests in That Direction, Then Reverse Direction |
+| C-LOOK                               | Seek in One Direction Until No More Requests in That Direction, Then Seek to The Lowest Track|
+
+### Proof of Concept
+If you only want to see the algorithms and their implementation without all the unnecessary presentation layers found in this repository. You can check out this [proof of concept](https://pastebin.com/HRi8TEC3) paste bin that I created.
+
+### Jupyter Notebook Alternative
+If you are more comfortable working with `Jupyter Notebooks`, I have also created an alternative file that you can run independently in this repository.
 
 ## Setup / Usage
 
