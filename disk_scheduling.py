@@ -84,7 +84,7 @@ def main():
         tracks.insert(0, starting_track)
 
     choices = [
-        ("First-Come, First-Serve (FCFS)", fcfs),
+        ("First-Come-First-Serve (FCFS)", fcfs),
         ("Shortest Seek Time First", sstf),
         ("SCAN", scan),
         ("C-SCAN", cscan),
