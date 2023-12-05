@@ -6,7 +6,8 @@ from views import View
 def main():
     choices = [
         "CPU Scheduling",
-        "Memory Management"
+        "Memory Management",
+        "Disk Scheduling"
     ]
 
     print("===== Operating System Simulator =====")
@@ -18,6 +19,7 @@ def main():
     entry_fn = None
     if choices[choice] == choices[0]: from process_scheduling import main as entry_fn
     if choices[choice] == choices[1]: from memory_managing import main as entry_fn
+    if choices[choice] == choices[2]: from disk_scheduling import main as entry_fn
 
     is_running = True 
     while is_running:
