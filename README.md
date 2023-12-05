@@ -3,6 +3,7 @@
 A program used to simulate various operating system concepts, such as:
 1. `CPU Process Scheduling`, wherein a process scheduling algorithm is simulated on a single-core processor. The scheduler and the processes are manually configured by the user to understand, how operating systems ensure fairness, responsitivity, and other metrics within the system.
 2. `Memory Page Replacement Algorithms`, wherein a memory page replacement algorithm is simulated based on a set of incoming page references. The algorithm and page references are manually configured by the user to understand how pages are swapped in and out to ensure higher page hits.
+3. `Disk Scheduling Algorithms`, wherein a disk scheduling algorithm is simulated based on a given set of tracks that the read/write head of a disk has to effectively go through. The algorithms, track sequence, number of cylinders, and starting track are manually configured by the user to understand how each disk scheduling algorithm traverses the incoming stream of tracks.
 
 These simulations were created in partial fulfillment of the requirements of one of my course requirements, **CS 3104 - Operating Systems**.
 
@@ -60,6 +61,9 @@ These algorithms can be categorized based on their approach to scheduling disk I
 | C-SCAN                               | Seek in One Direction Until Outer Track is Reached, Jump to the Inner Track, and Repeat |
 | LOOK                                 | Seek in One Direction Until No More Requests in That Direction, Then Reverse Direction |
 | C-LOOK                               | Seek in One Direction Until No More Requests in That Direction, Then Seek to The Lowest Track|
+
+### Limitations
+While the disk scheduling algorithms here works, it doesn't take into account seek time, arrival times, average rotation rate, and transfer times.
 
 ### Proof of Concept
 If you only want to see the algorithms and their implementation without all the unnecessary presentation layers found in this repository. You can check out this [proof of concept](https://pastebin.com/HRi8TEC3) paste bin that I created.
