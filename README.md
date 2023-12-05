@@ -65,7 +65,7 @@ These algorithms can be categorized based on their approach to scheduling disk I
 If you only want to see the algorithms and their implementation without all the unnecessary presentation layers found in this repository. You can check out this [proof of concept](https://pastebin.com/HRi8TEC3) paste bin that I created.
 
 ### Jupyter Notebook Alternative
-If you are more comfortable working with `Jupyter Notebooks`, I have also created an alternative file that you can run independently in this repository.
+If you are more comfortable working with `Jupyter Notebooks`, you can make use of the [notebook](https://github.com/LaplaceXD/OperatingSystemConcepts/blob/master/disk-scheduling.ipynb) I uploaded to this repository to try out the disk scheduling algorithms.
 
 ## Setup / Usage
 
